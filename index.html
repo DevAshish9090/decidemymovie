@@ -1666,7 +1666,10 @@
   .auth__oauth:hover{ border-color:#c9a153; background:#f2efe6; }
   /* Google's own rendered button is the real click target; kept present and
      clickable but visually hidden behind our styled .auth__oauth. */
-  .gbtn-host{ position:absolute; width:1px; height:1px; overflow:hidden; opacity:.001; z-index:-1; }
+  .auth__gwrap{ position:relative; }
+  .gbtn-host{ position:absolute; inset:0; z-index:2; opacity:0; overflow:hidden; border-radius:11px; }
+  .gbtn-host:empty{ pointer-events:none; }   /* Google didn't render (blocked/unconfigured) -> click falls through to the styled button */
+  .gbtn-host > div, .gbtn-host iframe{ width:100% !important; height:100% !important; }
   .auth__or{ display:flex; align-items:center; gap:12px; margin:14px 0; color:#8a8a82; font-size:.74rem; text-transform:uppercase; letter-spacing:.1em; }
   .auth__or::before, .auth__or::after{ content:""; flex:1; height:1px; background:#e4e0d2; }
   .auth__field{ display:block; margin-bottom:12px; }
@@ -3293,6 +3296,7 @@
           const first=modal.querySelector('.auth__view:not([hidden]) .auth__input');
           if(first) setTimeout(()=>{ first.focus({preventScroll:true}); if(panel) panel.scrollTop=0; },50);
         }
+        renderGBtn(modal.querySelector('.auth__view:not([hidden])'));
       }
       function open(view){ modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false');
         document.body.style.overflow='hidden'; show(view||'signin');
@@ -3636,25 +3640,37 @@
               setTimeout(close,650);
             }catch(e){ if(activeView) note(activeView, e.message); }
           }});
-          // Render Google's OWN button into each hidden host. We click OUR styled
-          // button, which forwards the click to Google's real one — this reliably
-          // opens the account-picker popup. google.accounts.id.prompt() (One Tap)
-          // is silently suppressed by Chrome/Brave, which is why nothing happened.
-          modal.querySelectorAll('.gbtn-host').forEach(host=>{
-            host.innerHTML='';
-            google.accounts.id.renderButton(host,{ type:'standard', theme:'outline', size:'large', width:320 });
-          });
+          // Google renders its button inside a cross-origin iframe, so we can't
+          // reach into it to proxy a click. Instead we render the REAL button and
+          // lay it invisibly on top of our styled one (see .gbtn-host overlay CSS),
+          // measuring width when the view is visible. Done lazily via renderGBtn.
           googleReady=true;
-        }catch(e){ /* leave the button as a graceful no-op */ }
+          const cur = modal.classList.contains('is-open')
+            ? modal.querySelector('.auth__view:not([hidden])') : null;
+          if(cur) renderGBtn(cur);
+        }catch(e){ /* leave the styled button as a graceful no-op */ }
+      }
+      function renderGBtn(view){
+        if(!googleReady || !view || typeof google==='undefined') return;
+        const btn=view.querySelector('.auth__oauth'), host=view.querySelector('.gbtn-host');
+        if(!btn || !host) return;
+        if(!btn.parentElement.classList.contains('auth__gwrap')){   // wrap once for the overlay
+          const wrap=document.createElement('div'); wrap.className='auth__gwrap';
+          btn.parentNode.insertBefore(wrap,btn); wrap.appendChild(btn); wrap.appendChild(host);
+        }
+        const w=Math.max(200, Math.min(400, Math.round(btn.offsetWidth)||360));
+        if(host.dataset.w===String(w) && host.firstChild) return;   // already rendered at this size
+        host.innerHTML=''; host.dataset.w=String(w);
+        google.accounts.id.renderButton(host,{ type:'standard', theme:'outline', size:'large',
+          width:w, text:(view.dataset.view==='signup'?'signup_with':'continue_with') });
       }
       initGoogle();
+      // With the real Google button overlaid on top, a click on our styled button
+      // only reaches here when Google DIDN'T render (blocked by an extension, or
+      // not configured) — the :empty host is click-through in that case.
       modal.querySelectorAll('.auth__oauth').forEach(btn=>btn.addEventListener('click',()=>{
         const view=btn.closest('.auth__view');
-        if(!googleReady){ note(view,'Google sign-in is not set up yet. Use email instead.'); return; }
-        // forward the click to Google's real (hidden) button in this view
-        const real=view.querySelector('.gbtn-host [role="button"], .gbtn-host div[tabindex]');
-        if(real){ real.click(); }
-        else { note(view,'Google sign-in is still loading. Try again in a second.'); }
+        note(view,'Google sign-in couldn\u2019t load \u2014 it may be blocked by a browser extension. You can sign in with email instead.');
       }));
 
       // ---- reflect auth state on the Sign in button ----
