@@ -2471,7 +2471,7 @@
             <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 12 0 12 12 0 0 0 1.3 6.6l4 3.1C6.2 6.9 8.9 4.8 12 4.8z"/></svg>
             Continue with Google
           </button>
-          <div class="gbtn-host" aria-hidden="true"></div>
+          <div class="gbtn-host"></div>
           <div class="auth__or">or</div>
           <label class="auth__field"><span>Email</span><input class="auth__input" type="email" placeholder="you@email.com" autocomplete="email"></label>
           <label class="auth__field"><span>Password</span><span class="auth__pw"><input class="auth__input" type="password" placeholder="••••••••" autocomplete="current-password"><button class="auth__eye" type="button" aria-label="Show password" aria-pressed="false"><svg class="ic-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ic-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.3 6.4A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.2-.9"/><path d="M10 10a3 3 0 0 0 4 4"/><line x1="3" y1="3" x2="21" y2="21"/></svg></button></span></label>
@@ -2491,7 +2491,7 @@
             <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 12 0 12 12 0 0 0 1.3 6.6l4 3.1C6.2 6.9 8.9 4.8 12 4.8z"/></svg>
             Sign up with Google
           </button>
-          <div class="gbtn-host" aria-hidden="true"></div>
+          <div class="gbtn-host"></div>
           <div class="auth__or">or</div>
           <label class="auth__field"><span>Name</span><input class="auth__input" type="text" placeholder="Your name" autocomplete="name"></label>
           <label class="auth__field"><span>Email</span><input class="auth__input" type="email" placeholder="you@email.com" autocomplete="email"></label>
@@ -3622,7 +3622,15 @@
 
       // ---- Google sign-in ----
       // Uses Google Identity Services if a client id is configured on the backend.
-      let googleReady=false;
+      let gsiLoaded=false;
+      async function gsiCallback(resp){
+        const activeView=modal.querySelector('.auth__view:not([hidden])');
+        try{ const out=await post('/api/auth/google',{ credential:resp.credential });
+          DMM.setUser(out.user);
+          if(activeView) note(activeView,'Signed in with Google.',true);
+          setTimeout(close,650);
+        }catch(e){ if(activeView) note(activeView, e.message); }
+      }
       async function initGoogle(){
         try{
           const h=await (await DMM.api('/health')).json();
@@ -3632,36 +3640,26 @@
           await new Promise((res,rej)=>{ const s=document.createElement('script');
             s.src='https://accounts.google.com/gsi/client'; s.async=true; s.onload=res; s.onerror=rej;
             document.head.appendChild(s); });
-          google.accounts.id.initialize({ client_id:cid, callback:async(resp)=>{
-            const activeView=modal.querySelector('.auth__view:not([hidden])');
-            try{ const out=await post('/api/auth/google',{ credential:resp.credential });
-              DMM.setUser(out.user);
-              if(activeView) note(activeView,'Signed in with Google.',true);
-              setTimeout(close,650);
-            }catch(e){ if(activeView) note(activeView, e.message); }
-          }});
-          // Google renders its button inside a cross-origin iframe, so we can't
-          // reach into it to proxy a click. Instead we render the REAL button and
-          // lay it invisibly on top of our styled one (see .gbtn-host overlay CSS),
-          // measuring width when the view is visible. Done lazily via renderGBtn.
-          googleReady=true;
+          gsiLoaded=true;
           const cur = modal.classList.contains('is-open')
             ? modal.querySelector('.auth__view:not([hidden])') : null;
           if(cur) renderGBtn(cur);
         }catch(e){ /* leave the styled button as a graceful no-op */ }
       }
       function renderGBtn(view){
-        if(!googleReady || !view || typeof google==='undefined') return;
+        if(!gsiLoaded || !view || typeof google==='undefined') return;
         const btn=view.querySelector('.auth__oauth'), host=view.querySelector('.gbtn-host');
         if(!btn || !host) return;
         if(!btn.parentElement.classList.contains('auth__gwrap')){   // wrap once for the overlay
           const wrap=document.createElement('div'); wrap.className='auth__gwrap';
           btn.parentNode.insertBefore(wrap,btn); wrap.appendChild(btn); wrap.appendChild(host);
         }
+        // Re-initialize AND re-render on every open. GSI leaves its button inert
+        // after a completed sign-in, so a stale (or merely re-rendered) button is
+        // dead on the next open — log out then log in again. A fresh init + render
+        // each time keeps it live.
+        try{ google.accounts.id.initialize({ client_id:window.DMM_GOOGLE_CLIENT_ID, callback:gsiCallback }); }catch(e){}
         const w=Math.max(200, Math.min(400, Math.round(btn.offsetWidth)||360));
-        // Always render fresh. After a completed sign-in GSI can leave the old
-        // button/iframe inert, so reusing it makes the button unclickable on the
-        // next open (log out -> log in again). Re-rendering is cheap.
         host.innerHTML=''; host.dataset.w=String(w);
         google.accounts.id.renderButton(host,{ type:'standard', theme:'outline', size:'large',
           width:w, text:(view.dataset.view==='signup'?'signup_with':'continue_with') });
