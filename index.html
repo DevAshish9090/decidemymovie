@@ -1972,7 +1972,7 @@
 
   <main class="hero">
     <div class="hero__media">
-      <video id="bgVideo" autoplay muted loop playsinline preload="auto" poster="img/movie-poster.jpg">
+      <video id="bgVideo" autoplay muted loop playsinline preload="auto">
         <source src="video/movie-bg.mp4" type="video/mp4" />
       </video>
       <div class="hero__blendtop"></div>
@@ -2639,7 +2639,7 @@
       wrap.innerHTML=FEATURES.map((f,i)=>(
         '<article class="pcard'+(i===1?' is-active':'')+'" data-i="'+i+'">'
         + '<figure class="pcard__art">'
-        +   '<video src="'+f.media+'" autoplay muted loop playsinline preload="auto" poster="img/movie-poster.jpg"></video>'
+        +   '<video src="'+f.media+'" autoplay muted loop playsinline preload="auto"></video>'
         +   '</figure>'
         + '<div class="pcard__body"><h3 class="pcard__name">'+f.name+'</h3>'
         +   '<span class="pcard__tag">'+f.tag+'</span><p class="pcard__text">'+f.text+'</p></div>'
