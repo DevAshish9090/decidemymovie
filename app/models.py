@@ -34,7 +34,7 @@ class User(Base):
     google_sub: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     email_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     avatar_color: Mapped[str | None] = mapped_column(String(9), nullable=True)  # hex for the DP disc
-    avatar_url: Mapped[str | None] = mapped_column(String(300), nullable=True)  # custom uploaded photo
+    avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)  # custom uploaded photo (data URL)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     @property

@@ -71,6 +71,25 @@ async def init_db() -> None:
                 except Exception as e:
                     print(f"[db] could not add {table.name}.{col.name}: {type(e).__name__}: {e}")
 
+        # Widen columns a model promoted from String(n) to Text. create_all and
+        # the add-column pass never change existing column TYPES, so an older
+        # Postgres DB keeps the narrow VARCHAR(n) and rejects long values
+        # ("value too long for type character varying(N)" — e.g. avatar_url data
+        # URLs). ALTER ... TYPE TEXT is always a safe widening (never truncates)
+        # and is a no-op if the column is already TEXT. Postgres only.
+        if not is_sqlite:
+            from sqlalchemy import Text as _TextType
+            for table in Base.metadata.sorted_tables:
+                for col in table.columns:
+                    if isinstance(col.type, _TextType):
+                        try:
+                            await conn.execute(text(
+                                f'ALTER TABLE "{table.name}" '
+                                f'ALTER COLUMN "{col.name}" TYPE TEXT'))
+                        except Exception as e:
+                            print(f"[db] could not widen {table.name}.{col.name}: "
+                                  f"{type(e).__name__}: {e}")
+
 
 async def get_session() -> AsyncSession:
     """FastAPI dependency: one session per request, always closed."""
