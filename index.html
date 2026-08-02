@@ -13,6 +13,8 @@
 <!-- favicon: uses the existing logo; add favicon.ico / apple-touch-icon.png for full coverage later -->
 <link rel="icon" href="logo.png" type="image/png" />
 <link rel="apple-touch-icon" href="logo.png" />
+<!-- preload the auth modal artwork at idle priority so it's cached before the user opens sign-in -->
+<link rel="preload" as="image" href="img/auth-panel.webp" fetchpriority="low" />
 <meta name="theme-color" content="#0A1519" />
 
 <!-- Open Graph (WhatsApp, Facebook, LinkedIn link previews) -->
