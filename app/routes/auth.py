@@ -20,8 +20,10 @@ import time
 
 import httpx
 import asyncio
+from urllib.parse import urlencode
 from datetime import timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -185,6 +187,9 @@ async def login(body: LoginIn, request: Request, response: Response,
 @router.post("/google")
 async def google(body: GoogleIn, request: Request, response: Response,
                  session: AsyncSession = Depends(get_session)):
+    """Legacy GSI id-token path (kept for compatibility). The primary flow is the
+    redirect one below, which also works on Brave / mobile / ad-blockers where
+    third-party cookies are blocked."""
     if not settings.google_client_id:
         raise HTTPException(503, "Google sign-in is not configured on this server yet.")
     if _throttle(_ip(request), limit=20):
@@ -211,10 +216,18 @@ async def google(body: GoogleIn, request: Request, response: Response,
     if not sub or not email:
         raise HTTPException(401, "Google did not return the expected account details.")
 
+    user, created = await _upsert_google_user(session, sub, email, name)
+    if created:
+        _send_welcome_bg(user.email, user.name)
+    return await _finish_login(request, response, session, user, body.device_token)
+
+
+async def _upsert_google_user(session: AsyncSession, sub: str, email: str, name: str | None):
+    """Find-or-create the account for a verified Google identity. Links Google to
+    an existing email account if one exists. Returns (user, created)."""
     user = (await session.execute(select(User).where(User.google_sub == sub))).scalar_one_or_none()
     created = False
     if user is None:
-        # link to an existing email account if one exists, else create fresh
         user = (await session.execute(select(User).where(User.email == email))).scalar_one_or_none()
         if user is None:
             user = User(email=email, name=name, google_sub=sub, email_verified=True)
@@ -227,9 +240,105 @@ async def google(body: GoogleIn, request: Request, response: Response,
                 user.name = name
         await session.commit()
         await session.refresh(user)
+    return user, created
+
+
+# ---- Google OAuth redirect flow (works on Brave / mobile / ad-blockers) -----
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+
+
+def _google_redirect_uri(request: Request) -> str:
+    """The callback URL Google redirects back to. Must EXACTLY match an
+    'Authorized redirect URI' on the OAuth client. Uses PUBLIC_URL in prod and the
+    request's own base on localhost so dev works without extra config."""
+    base = (settings.public_url or "").rstrip("/")
+    host = request.url.hostname or ""
+    if host in ("localhost", "127.0.0.1") or not base:
+        base = str(request.base_url).rstrip("/")
+    return base + "/api/auth/google/callback"
+
+
+@router.get("/google/login")
+async def google_login(request: Request, device_token: str | None = None):
+    """Kick off Google sign-in: redirect the whole page to Google. No iframe, no
+    popup, no third-party cookies — so it works where the GSI button can't."""
+    if not (settings.google_client_id and settings.google_client_secret):
+        raise HTTPException(503, "Google sign-in is not configured on this server yet.")
+    if _throttle(_ip(request), limit=30):
+        raise HTTPException(429, "Too many attempts. Please try again shortly.")
+    state = secrets.token_urlsafe(24)
+    params = {
+        "client_id": settings.google_client_id,
+        "redirect_uri": _google_redirect_uri(request),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    resp = RedirectResponse(GOOGLE_AUTH_URL + "?" + urlencode(params), status_code=302)
+    secure = _secure(request)
+    # short-lived cookies carry the CSRF state + the anon device token across the trip
+    resp.set_cookie("dmm_oauth_state", state, max_age=600, httponly=True,
+                    samesite="lax", secure=secure, path="/")
+    if device_token:
+        resp.set_cookie("dmm_oauth_dt", device_token, max_age=600, httponly=True,
+                        samesite="lax", secure=secure, path="/")
+    return resp
+
+
+@router.get("/google/callback")
+async def google_callback(request: Request,
+                          session: AsyncSession = Depends(get_session),
+                          code: str | None = None, state: str | None = None,
+                          error: str | None = None):
+    """Google redirects back here with ?code. Exchange it server-to-server (using
+    the client secret), verify the identity, sign the user in by setting the
+    session cookie ON the redirect, then send them back to the site."""
+    site = (settings.public_url or str(request.base_url)).rstrip("/")
+    if error or not code:
+        return RedirectResponse(site + "/?google=cancelled", status_code=302)
+    if not state or state != request.cookies.get("dmm_oauth_state"):
+        return RedirectResponse(site + "/?google=failed", status_code=302)   # CSRF / expired
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            tok = await client.post(GOOGLE_TOKEN_URL, data={
+                "code": code,
+                "client_id": settings.google_client_id,
+                "client_secret": settings.google_client_secret,
+                "redirect_uri": _google_redirect_uri(request),
+                "grant_type": "authorization_code",
+            })
+            tok.raise_for_status()
+            id_token = tok.json().get("id_token")
+            r = await client.get("https://oauth2.googleapis.com/tokeninfo",
+                                 params={"id_token": id_token})
+            r.raise_for_status()
+            info = r.json()
+    except Exception:
+        return RedirectResponse(site + "/?google=failed", status_code=302)
+
+    if info.get("aud") != settings.google_client_id or info.get("email_verified") not in ("true", True):
+        return RedirectResponse(site + "/?google=failed", status_code=302)
+    sub = info.get("sub")
+    email = (info.get("email") or "").strip().lower()
+    name = info.get("name") or None
+    if not sub or not email:
+        return RedirectResponse(site + "/?google=failed", status_code=302)
+
+    user, created = await _upsert_google_user(session, sub, email, name)
     if created:
         _send_welcome_bg(user.email, user.name)
-    return await _finish_login(request, response, session, user, body.device_token)
+
+    resp = RedirectResponse(site + "/?google=ok", status_code=302)
+    await merge_anonymous_library(session, request.cookies.get("dmm_oauth_dt"), user)
+    sid = await create_session(session, user)
+    set_session_cookie(resp, sid, secure=_secure(request))
+    resp.delete_cookie("dmm_oauth_state", path="/")
+    resp.delete_cookie("dmm_oauth_dt", path="/")
+    return resp
 
 
 # ---------------------------------------------------------------------------

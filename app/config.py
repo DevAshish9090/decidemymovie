@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # Leave blank to disable the Google button. No client secret is needed for
     # the ID-token flow we use.
     google_client_id: str = ""
+    google_client_secret: str = ""                  # needed for the server-side OAuth redirect flow
 
     # --- Bug reports / contact form ---
     # Reports are ALWAYS saved to the database. These only control whether a
