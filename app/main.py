@@ -82,7 +82,7 @@ async def api_root():
 # registered LAST, so every /api/* route and /health above win first.
 FRONTEND_DIR = Path(__file__).resolve().parent.parent          # project root
 SERVE_EXT = {".html", ".css", ".js", ".map", ".png", ".jpg", ".jpeg",
-             ".webp", ".gif", ".svg", ".ico", ".woff2", ".webmanifest"}
+             ".webp", ".gif", ".svg", ".ico", ".mp4", ".webm", ".woff2", ".webmanifest"}
 BLOCKED_TOP = {"app", "uploads", ".venv", "venv", "__pycache__"}   # never served
 _LONG_CACHE = {".mp4", ".webp", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".woff2"}
 
