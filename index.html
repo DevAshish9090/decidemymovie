@@ -35,13 +35,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  /* self-hosted display font */
-  @font-face{
-    font-family:"Anola";
-    src:url("fonts/anola.woff2") format("woff2");
-    font-weight:400;
-    font-display:swap;
-  }
   :root{
     /* palette pulled from the video */
     --ink:        #0A1519;   /* deep teal-black base (video shadows) */
@@ -176,7 +169,7 @@
   }
 
   .display{
-    font-family:"Anola", "Fraunces", serif;
+    font-family:"Fraunces", serif;
     font-weight:400;
     letter-spacing:.01em;
     font-size:clamp(2.9rem, 6vw, 5.1rem);
@@ -328,7 +321,7 @@
     color:var(--gold);
   }
   .feats__title{
-    font-family:"Anola","Fraunces",serif; font-weight:400;
+    font-family:"Fraunces",serif; font-weight:400;
     font-size:clamp(1.9rem,4vw,3rem); line-height:1.05; letter-spacing:.01em;
     margin-top:8px; color:var(--cream);
   }
@@ -352,7 +345,7 @@
     color:var(--muted);
   }
   .feat__name-lg{
-    font-family:"Anola","Fraunces",serif; font-weight:400;
+    font-family:"Fraunces",serif; font-weight:400;
     font-size:clamp(2.4rem,5vw,4rem); line-height:1; letter-spacing:.02em;
     margin:16px 0 0; color:var(--cream);
   }
@@ -362,7 +355,7 @@
   }
   .feat__cta{ display:flex; align-items:center; gap:16px; margin-top:34px; }
   .feat__pill{
-    font-family:"Anola","Fraunces",serif; font-weight:400;
+    font-family:"Fraunces",serif; font-weight:400;
     font-size:1.15rem; letter-spacing:.04em;
     padding:12px 26px; border-radius:999px;
     color:var(--ink); background:linear-gradient(150deg, var(--gold-soft), var(--gold) 78%);
@@ -453,7 +446,7 @@
   .feat__action-label{
     flex:1;
     text-align:center;                 /* sit centred in the free space */
-    font-family:"Anola","Fraunces",serif; font-weight:400;
+    font-family:"Fraunces",serif; font-weight:400;
     font-size:1.5rem; letter-spacing:.02em; color:var(--ink);
     white-space:nowrap;
   }
@@ -495,7 +488,7 @@
   }
   .fcard__body{ min-width:0; }
   .fcard__name{
-    font-family:"Anola","Fraunces",serif; font-weight:400;
+    font-family:"Fraunces",serif; font-weight:400;
     font-size:clamp(2.2rem,4.4vw,3.4rem); line-height:1; letter-spacing:.02em; color:var(--cream);
   }
   .fcard__tag{
@@ -518,7 +511,7 @@
   .fcard__action:hover{ transform:translateY(-2px); }
   .fcard__action .lbl{
     flex:1; text-align:center;
-    font-family:"Anola","Fraunces",serif; font-size:1.35rem; letter-spacing:.02em; color:var(--ink); white-space:nowrap;
+    font-family:"Fraunces",serif; font-size:1.35rem; letter-spacing:.02em; color:var(--ink); white-space:nowrap;
   }
   .fcard__action .go{
     flex:0 0 auto; width:50px; height:50px; border-radius:50%; display:grid; place-items:center;
@@ -617,7 +610,7 @@
 
   /* text in the middle */
   .pcard__body{ padding:14px 4px 0; text-align:center; flex:1; }
-  .pcard__name{ font-family:"Anola","Fraunces",serif; font-weight:400; font-size:clamp(1.3rem,1.7vw,1.6rem); line-height:1; letter-spacing:.02em; color:var(--cream); }
+  .pcard__name{ font-family:"Fraunces",serif; font-weight:400; font-size:clamp(1.3rem,1.7vw,1.6rem); line-height:1; letter-spacing:.02em; color:var(--cream); }
   .pcard__tag{ display:inline-block; margin-top:8px; font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); }
   .pcard__text{ margin-top:10px; font-size:.82rem; line-height:1.5; color:var(--muted); }
 
@@ -634,7 +627,7 @@
   }
 
   .pcard__btn:hover{ transform:translateY(-2px); background:rgba(255,255,255,0.16); }
-  .pcard__btn .lbl{ font-family:"Anola","Fraunces",serif; font-size:1rem; letter-spacing:.02em; color:#fff; white-space:nowrap; }
+  .pcard__btn .lbl{ font-family:"Fraunces",serif; font-size:1rem; letter-spacing:.02em; color:#fff; white-space:nowrap; }
   .pcard__btn .go{ flex:0 0 auto; width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
     background:linear-gradient(180deg,#FFDD7A 0%,#E8A93D 100%); color:#2a2205;
     box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.5); }
