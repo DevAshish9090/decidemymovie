@@ -82,7 +82,7 @@ async def api_root():
 # registered LAST, so every /api/* route and /health above win first.
 FRONTEND_DIR = Path(__file__).resolve().parent.parent          # project root
 SERVE_EXT = {".html", ".css", ".js", ".map", ".png", ".jpg", ".jpeg",
-             ".webp", ".gif", ".svg", ".ico", ".mp4", ".woff2"}
+             ".webp", ".gif", ".svg", ".ico", ".woff2", ".webmanifest"}
 BLOCKED_TOP = {"app", "uploads", ".venv", "venv", "__pycache__"}   # never served
 _LONG_CACHE = {".mp4", ".webp", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".woff2"}
 
@@ -99,7 +99,9 @@ def _served(path: Path, status_code: int = 200) -> FileResponse:
         cc = "public, max-age=3600"            # 1 hour
     else:
         cc = "no-cache"                         # html and everything else
-    return FileResponse(path, status_code=status_code, headers={"Cache-Control": cc})
+    media = "application/manifest+json" if ext == ".webmanifest" else None
+    return FileResponse(path, status_code=status_code, media_type=media,
+                        headers={"Cache-Control": cc})
 
 
 def _safe_frontend_file(rel: str) -> Path | None:
