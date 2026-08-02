@@ -3659,7 +3659,9 @@
           btn.parentNode.insertBefore(wrap,btn); wrap.appendChild(btn); wrap.appendChild(host);
         }
         const w=Math.max(200, Math.min(400, Math.round(btn.offsetWidth)||360));
-        if(host.dataset.w===String(w) && host.firstChild) return;   // already rendered at this size
+        // Always render fresh. After a completed sign-in GSI can leave the old
+        // button/iframe inert, so reusing it makes the button unclickable on the
+        // next open (log out -> log in again). Re-rendering is cheap.
         host.innerHTML=''; host.dataset.w=String(w);
         google.accounts.id.renderButton(host,{ type:'standard', theme:'outline', size:'large',
           width:w, text:(view.dataset.view==='signup'?'signup_with':'continue_with') });
