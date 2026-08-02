@@ -1,0 +1,26 @@
+# Secrets — NEVER commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# SQLite (local dev DB, added later)
+*.db
+*.sqlite3
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+# Runtime uploads (bug-report screenshots) — live on the volume in prod
+uploads/
+
+# Google OAuth client secret — must NEVER be committed
+client_secret_*.json
+
+# Local scratch notebook with API keys — never commit
+apikey.ipynb

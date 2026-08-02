@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How it works — DecideMyMovie</title>
+<meta name="description" content="The four ways to find something to watch, and how the recommendations are actually produced.">
+<link rel="canonical" href="https://decidemymovie.com/how-it-works.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="page.css">
+</head>
+<body data-page="how">
+<div id="site-header"></div>
+
+<section class="phero">
+  <span class="phero__eyebrow">How it works</span>
+  <h1 class="phero__title">Four ways in, one film out</h1>
+  <p class="phero__sub">Different evenings call for different questions. Pick whichever matches the state you are in.</p>
+</section>
+
+<main class="prose">
+
+  <h2>The four ways</h2>
+
+  <div class="cards">
+    <div class="card">
+      <span class="card__n">1</span>
+      <h3>The Vibe</h3>
+      <p>Say how you feel in plain words, or tap a mood. You get picks with a line explaining why each one fits.</p>
+    </div>
+    <div class="card">
+      <span class="card__n">2</span>
+      <h3>Describe</h3>
+      <p>You remember a scene but not the name. Describe whatever you have and we work out the title.</p>
+    </div>
+    <div class="card">
+      <span class="card__n">3</span>
+      <h3>Roll the Dice</h3>
+      <p>Swipe right to save, left to skip. For when you want to be surprised rather than to choose.</p>
+    </div>
+    <div class="card">
+      <span class="card__n">4</span>
+      <h3>Browse</h3>
+      <p>Trending now, genres, and curated collections, if you already know roughly what you are after.</p>
+    </div>
+  </div>
+
+  <h2>What happens when you describe a mood</h2>
+  <p>It looks like magic and it is deliberately not. Here is the actual sequence:</p>
+
+  <h3>1. We read your intent, not your words</h3>
+  <p>A language model turns your sentence into structured filters: genre, era, rough quality floor, tone. Crucially, <strong>it is not allowed to name any films at this stage</strong>. Its only job is to understand what you meant.</p>
+
+  <h3>2. The film database does the finding</h3>
+  <p>Those filters go to TMDB, which returns a wide pool of real, existing films that match. Every candidate is a genuine title with real data behind it.</p>
+
+  <h3>3. The model ranks and explains</h3>
+  <p>The pool comes back to the language model, which now picks the best fits for your specific mood and writes the one-line reason under each poster. It can only choose from films that came back in step two.</p>
+
+  <div class="note">
+    <p><strong>Why it is built this way:</strong> ask a language model to recommend films directly and it will confidently invent ones that do not exist, or recommend the same handful of famous titles to everyone. Letting the database find and the model interpret means you get real films, chosen for how they feel.</p>
+  </div>
+
+  <h3>4. We check where you can actually watch it</h3>
+  <p>For every pick we look up current streaming availability in your region, so &ldquo;Watch now&rdquo; sends you to the right service rather than a dead end. If a title is only available to rent or buy, we say so instead of pretending otherwise.</p>
+
+  <h2>What we deliberately do not do</h2>
+  <ul>
+    <li><strong>No invented statistics.</strong> Rare badges in Roll the Dice come from real TMDB ratings and vote counts. You will never see a made-up &ldquo;only 3% of users found this&rdquo;.</li>
+    <li><strong>No paid placement.</strong> No studio or streaming service can buy a slot in your results.</li>
+    <li><strong>No profile building.</strong> We do not construct an advertising profile from what you watch or search.</li>
+  </ul>
+
+  <h2>When it gets things wrong</h2>
+  <p>It will, sometimes. A mood can be read too literally, availability data can lag behind reality, and an occasional pick will simply be a bad call. When that happens the useful thing is to tell us exactly what you typed and what came back, which is the fastest route to a fix.</p>
+  <p><a href="contact.html#report">Report a bad result or a bug</a>.</p>
+
+  <hr>
+  <p>More on the thinking behind it: <a href="about.html">About DecideMyMovie</a>.</p>
+
+</main>
+
+<div id="site-footer"></div>
+<script src="page.js"></script>
+</body>
+</html>

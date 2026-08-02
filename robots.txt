@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The API is not content to index
+Disallow: /api/
+
+Sitemap: https://decidemymovie.com/sitemap.xml

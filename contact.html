@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact &amp; report a bug — DecideMyMovie</title>
+<meta name="description" content="Found something broken on DecideMyMovie? Tell us here and it goes straight to the people who can fix it.">
+<link rel="canonical" href="https://decidemymovie.com/contact.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="page.css">
+</head>
+<body data-page="contact">
+<!-- Point this at the live backend when you deploy. Same line as index.html. -->
+<script>window.DMM_API = (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? (location.protocol + "//" + location.hostname + ":8000") : location.origin;</script>
+<div id="site-header"></div>
+
+<section class="phero">
+  <span class="phero__eyebrow">Contact</span>
+  <h1 class="phero__title">Something broken? Tell us.</h1>
+  <p class="phero__sub">Bug reports from real people are the fastest way this gets better. Everything sent here reaches <strong>admin@decidemymovie.com</strong> and is read by someone who can actually fix it.</p>
+</section>
+
+<main class="prose">
+
+  <h2 id="report">Report a bug or send a message</h2>
+  <p>The more specific you are, the faster it gets fixed. If it is a bad recommendation, telling us exactly what you typed and what came back is worth more than anything else.</p>
+
+  <div class="form">
+    <div class="field" style="margin-bottom:14px">
+      <label for="rType">What is this about</label>
+      <select id="rType">
+        <option value="bug">Something is broken</option>
+        <option value="result">A recommendation was wrong or odd</option>
+        <option value="availability">Wrong streaming availability</option>
+        <option value="idea">Feature idea or suggestion</option>
+        <option value="data">Privacy or data request</option>
+        <option value="other">Something else</option>
+      </select>
+    </div>
+
+    <div class="form__row">
+      <div class="field">
+        <label for="rName">Your name <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input id="rName" type="text" maxlength="80" placeholder="What should we call you?">
+      </div>
+      <div class="field">
+        <label for="rEmail">Email</label>
+        <input id="rEmail" type="email" maxlength="160" placeholder="you@email.com" autocomplete="email">
+        <span class="field__hint">So we can reply and tell you when it is fixed.</span>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label for="rWhere">Where it happened <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input id="rWhere" type="text" maxlength="300" placeholder="e.g. The Vibe results, or the trailer popup">
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label for="rMsg">What happened</label>
+      <textarea id="rMsg" maxlength="4000" placeholder="What you did, what you expected, and what happened instead. If a recommendation was wrong, paste exactly what you typed."></textarea>
+      <span class="field__hint"><span id="rCount">0</span> / 4000</span>
+    </div>
+
+    <div class="field" style="margin-bottom:14px">
+      <label for="rShot">Screenshot <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+      <div class="drop" id="rDrop">
+        <input type="file" id="rShot" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        <div class="drop__idle" id="rDropIdle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="m21 15-5-5L5 21"/></svg>
+          <span><strong>Choose an image</strong> or drag one here</span>
+          <span class="drop__hint">PNG, JPG, WEBP or GIF. Up to 4 MB. A picture of the fault is worth a paragraph describing it.</span>
+        </div>
+        <div class="drop__has" id="rDropHas" hidden>
+          <img id="rThumb" alt="">
+          <div class="drop__meta"><span id="rFileName"></span><span id="rFileSize" class="drop__hint"></span></div>
+          <button type="button" class="drop__rm" id="rClear" aria-label="Remove screenshot">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin:4px 0 6px;color:var(--muted);font-size:.9rem;line-height:1.55">
+      <input type="checkbox" id="rTech" checked style="margin-top:3px;width:auto;accent-color:#D4A24C">
+      <span>Include my browser and screen size. This helps us reproduce layout and display faults, and is the single most useful thing for a visual bug.</span>
+    </label>
+
+    <button class="submit" id="rSend" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4Z"/></svg>
+      <span>Send report</span>
+    </button>
+
+    <p class="formnote" id="rNote" role="status" aria-live="polite"></p>
+  </div>
+
+  <hr>
+
+  <h2>Or just email us</h2>
+  <p>If a form is not your thing, everything above also works as a plain email.</p>
+  <table class="dtable">
+    <tr>
+      <th>Bugs, broken features, security</th>
+      <td><a href="mailto:admin@decidemymovie.com">admin@decidemymovie.com</a></td>
+    </tr>
+    <tr>
+      <th>General, press, partnerships</th>
+      <td><a href="mailto:sponsor@decidemymovie.com">sponsor@decidemymovie.com</a></td>
+    </tr>
+    <tr>
+      <th>Privacy and data requests</th>
+      <td><a href="mailto:contact@decidemymovie.com">contact@decidemymovie.com</a>. See the <a href="privacy.html">Privacy Policy</a> for what we hold and how to have it deleted.</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <p><strong>Security vulnerabilities:</strong> please report these privately to <a href="mailto:admin@decidemymovie.com">admin@decidemymovie.com</a> rather than publishing them, and give us a reasonable window to fix the issue. We will not pursue anyone reporting a genuine problem in good faith.</p>
+  </div>
+
+  <h2>Before you report a recommendation problem</h2>
+  <p>Two things are worth checking, because they explain most odd results:</p>
+  <ul>
+    <li><strong>Streaming availability is regional.</strong> We show what is available in your country. A film streaming elsewhere may genuinely not be available where you are.</li>
+    <li><strong>Availability data can lag.</strong> Titles leave services constantly and the underlying data takes time to catch up. If &ldquo;Watch now&rdquo; leads nowhere, that is still worth reporting.</li>
+  </ul>
+
+  <p>We read everything. We cannot always reply to every message, but anything describing a genuine fault will get a response.</p>
+
+</main>
+
+<div id="site-footer"></div>
+<script src="page.js"></script>
+<script>
+(function () {
+  var API   = window.DMM_API || 'http://localhost:8000';
+  var typeEl = document.getElementById('rType');
+  var nameEl = document.getElementById('rName');
+  var mailEl = document.getElementById('rEmail');
+  var whereEl= document.getElementById('rWhere');
+  var msgEl  = document.getElementById('rMsg');
+  var techEl = document.getElementById('rTech');
+  var shotEl = document.getElementById('rShot');
+  var drop   = document.getElementById('rDrop');
+  var dIdle  = document.getElementById('rDropIdle');
+  var dHas   = document.getElementById('rDropHas');
+  var thumb  = document.getElementById('rThumb');
+  var fName  = document.getElementById('rFileName');
+  var fSize  = document.getElementById('rFileSize');
+  var clearB = document.getElementById('rClear');
+  var btn    = document.getElementById('rSend');
+  var note   = document.getElementById('rNote');
+  var count  = document.getElementById('rCount');
+  var emailRe = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+  msgEl.addEventListener('input', function () { count.textContent = msgEl.value.length; });
+
+  // deep links like contact.html?type=bug preselect the right category
+  var params = new URLSearchParams(location.search);
+  var q = params.get('type');
+  if (q) { for (var i = 0; i < typeEl.options.length; i++) { if (typeEl.options[i].value === q) typeEl.selectedIndex = i; } }
+
+  // ...and ?msg= prefills the message, used by the 404 page to carry the broken URL over
+  var pre = params.get('msg');
+  if (pre) {
+    msgEl.value = pre.slice(0, 4000);
+    count.textContent = msgEl.value.length;
+    setTimeout(function () {
+      msgEl.focus();
+      msgEl.setSelectionRange(msgEl.value.length, msgEl.value.length);
+    }, 60);
+  }
+
+  function bad(el, isBad) { el.parentElement.classList.toggle('is-bad', !!isBad); }
+
+  function say(text, kind) {
+    note.textContent = text;
+    note.className = 'formnote' + (kind ? ' is-' + kind : '');
+  }
+
+  // ---- screenshot ----
+  var MAX_BYTES = 4 * 1024 * 1024;
+  var OK_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+  var shot = null;   // { name, type, data } where data is a base64 data URL
+
+  function kb(n) { return n < 1024 * 1024 ? Math.round(n / 1024) + ' KB'
+                                          : (n / 1024 / 1024).toFixed(1) + ' MB'; }
+
+  function clearShot() {
+    shot = null; shotEl.value = ''; thumb.removeAttribute('src');
+    dHas.hidden = true; dIdle.hidden = false;
+  }
+
+  function takeFile(file) {
+    if (!file) return;
+    if (OK_TYPES.indexOf(file.type) === -1) {
+      say('That file type is not supported. Please use a PNG, JPG, WEBP or GIF.', 'err'); return;
+    }
+    if (file.size > MAX_BYTES) {
+      say('That image is ' + kb(file.size) + '. Please keep screenshots under 4 MB.', 'err'); return;
+    }
+    var reader = new FileReader();
+    reader.onload = function () {
+      shot = { name: file.name, type: file.type, data: String(reader.result) };
+      thumb.onload = function(){ thumb.style.visibility = 'visible'; };
+      thumb.onerror = function(){ thumb.style.visibility = 'hidden'; };
+      thumb.style.visibility = 'hidden';   // stay hidden until it decodes
+      thumb.src = shot.data;
+      fName.textContent = file.name;
+      fSize.textContent = kb(file.size);
+      dIdle.hidden = true; dHas.hidden = false;
+      say('');
+    };
+    reader.onerror = function () { say('That image could not be read. Try another file.', 'err'); };
+    reader.readAsDataURL(file);
+  }
+
+  dIdle.addEventListener('click', function () { shotEl.click(); });
+  shotEl.addEventListener('change', function () { takeFile(shotEl.files[0]); });
+  clearB.addEventListener('click', function (e) { e.stopPropagation(); clearShot(); });
+
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('is-over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('is-over'); });
+  });
+  drop.addEventListener('drop', function (e) {
+    if (e.dataTransfer && e.dataTransfer.files.length) takeFile(e.dataTransfer.files[0]);
+  });
+  // paste a screenshot straight from the clipboard
+  window.addEventListener('paste', function (e) {
+    if (!e.clipboardData) return;
+    for (var i = 0; i < e.clipboardData.items.length; i++) {
+      var it = e.clipboardData.items[i];
+      if (it.kind === 'file' && it.type.indexOf('image/') === 0) { takeFile(it.getAsFile()); break; }
+    }
+  });
+
+  btn.addEventListener('click', function () {
+    var email = mailEl.value.trim();
+    var msg   = msgEl.value.trim();
+
+    var emailBad = !emailRe.test(email);
+    var msgBad   = msg.length < 10;
+    bad(mailEl, emailBad);
+    bad(msgEl, msgBad);
+    if (emailBad || msgBad) {
+      say(emailBad ? 'Please enter a valid email address so we can reply.'
+                   : 'Please add a little more detail, at least a sentence.', 'err');
+      return;
+    }
+
+    // base64 inflates the file ~33%. The backend caps the decoded image at 4MB,
+    // but the JSON field caps the STRING at 7M chars. A screenshot near the top
+    // of the raw limit can still be fine; if it's genuinely too big, say so here
+    // rather than letting the request fail with no feedback.
+    if (shot && shot.data && shot.data.length > 6_900_000) {
+      say('That screenshot is too large to send. Please attach a smaller one (under about 4 MB).', 'err');
+      return;
+    }
+
+    var body = {
+      kind: typeEl.value,
+      name: nameEl.value.trim(),
+      email: email,
+      where: whereEl.value.trim(),
+      message: msg,
+      page_url: location.href,
+      user_agent: techEl.checked ? navigator.userAgent : '',
+      screen: techEl.checked ? (window.screen.width + 'x' + window.screen.height +
+              ' @' + (window.devicePixelRatio || 1) + 'x, viewport ' +
+              window.innerWidth + 'x' + window.innerHeight) : '',
+      shot_name: shot ? shot.name : '',
+      shot_type: shot ? shot.type : '',
+      shot_data: shot ? shot.data : ''
+    };
+
+    var payload;
+    try {
+      payload = JSON.stringify(body);
+    } catch (e) {
+      // if the screenshot somehow can't be serialised, send the report without it
+      // rather than failing entirely
+      console.warn('report: could not serialise body, dropping screenshot:', e.message);
+      body.shot_name = ''; body.shot_type = ''; body.shot_data = '';
+      payload = JSON.stringify(body);
+    }
+
+    btn.disabled = true;
+    say('Sending\u2026');
+
+(async function () {
+      try {
+        var r = await fetch(API + '/api/report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+
+        // SUCCESS. Do the housekeeping FIRST, then set the message LAST so
+        // nothing that runs during cleanup (clearShot, field resets, or any
+        // side-effect handler they trigger) can overwrite the confirmation.
+        btn.disabled = false;
+        try {
+          nameEl.value = ''; whereEl.value = ''; msgEl.value = ''; count.textContent = '0';
+          if (thumb) { thumb.onload = null; thumb.onerror = null; }  // detach stale handlers
+          clearShot();
+        } catch (e) { console.warn('report: post-success cleanup failed:', e && e.message); }
+
+        note.className = 'formnote is-done';
+        note.innerHTML = '\u2713 Thanks &mdash; your report reached us. '
+          + 'If it needs a reply, you&rsquo;ll hear back from admin@decidemymovie.com.';
+        try { note.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+
+      } catch (err) {
+        console.warn('report failed:', err && err.message);
+        btn.disabled = false;
+        var subject = encodeURIComponent('[' + typeEl.value + '] DecideMyMovie report');
+        var lines = (shot ? '(A screenshot was attached in the form; please attach it to this email.)\n\n' : '')
+                  + 'From: ' + (nameEl.value.trim() || '(no name)') + ' <' + email + '>\n'
+                  + 'Where: ' + (whereEl.value.trim() || '(not given)') + '\n'
+                  + 'Page: ' + location.href + '\n\n' + msg;
+        var href = 'mailto:admin@decidemymovie.com?subject=' + subject + '&body=' + encodeURIComponent(lines);
+        note.className = 'formnote is-err';
+        note.innerHTML = 'We could not reach the server just now. '
+          + '<a href="' + href + '" style="color:var(--gold);border-bottom:1px solid rgba(212,162,76,.4)">Send it as an email instead</a>'
+          + ', with your message already filled in.';
+      }
+    })();
+  });
+})();
+</script>
+</body>
+</html>
