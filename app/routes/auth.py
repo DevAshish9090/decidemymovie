@@ -438,8 +438,8 @@ async def _consume_otp(session: AsyncSession, email: str, code: str, expect: str
         raise HTTPException(400, "That code was issued for something else. Please start again.")
 
     exp = row.expires_at
-    if exp.tzinfo is None:
-        exp = exp.replace(tzinfo=timezone.utc)
+    if exp.tzinfo is not None:                   # normalize to naive UTC to match _now()
+        exp = exp.replace(tzinfo=None)
     if exp < _now():
         await session.execute(delete(EmailOTP).where(EmailOTP.email == email))
         await session.commit()

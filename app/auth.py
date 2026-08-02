@@ -34,7 +34,12 @@ OTP_TTL_MINUTES = 10
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    # Naive UTC. The DateTime columns are timezone-naive (Postgres TIMESTAMP),
+    # and asyncpg refuses to encode an offset-aware datetime into a naive column
+    # ("can't subtract offset-naive and offset-aware datetimes"). Keeping app
+    # datetimes naive-UTC keeps writes and expiry comparisons consistent on both
+    # Postgres and SQLite.
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 # --- passwords -------------------------------------------------------------
@@ -96,8 +101,8 @@ async def current_user(
     if row is None:
         return None
     exp = row.expires_at
-    if exp.tzinfo is None:                      # SQLite hands back naive datetimes
-        exp = exp.replace(tzinfo=timezone.utc)
+    if exp.tzinfo is not None:                  # normalize to naive UTC to match _now()
+        exp = exp.replace(tzinfo=None)
     if exp < _now():
         await session.execute(delete(Session).where(Session.id == sid))
         await session.commit()
