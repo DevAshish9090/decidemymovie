@@ -2639,7 +2639,7 @@
       wrap.innerHTML=FEATURES.map((f,i)=>(
         '<article class="pcard'+(i===1?' is-active':'')+'" data-i="'+i+'">'
         + '<figure class="pcard__art">'
-        +   '<video src="'+f.media+'" autoplay muted loop playsinline preload="auto"></video>'
+        +   '<video src="'+f.media+'" muted loop playsinline preload="metadata"></video>'
         +   '</figure>'
         + '<div class="pcard__body"><h3 class="pcard__name">'+f.name+'</h3>'
         +   '<span class="pcard__tag">'+f.tag+'</span><p class="pcard__text">'+f.text+'</p></div>'
@@ -2649,6 +2649,11 @@
       )).join("");
 
       const cards=[...wrap.querySelectorAll(".pcard")];
+      // only decode the card videos while the features section is on screen —
+      // 3 clips + the hero all decoding at once is what made scrolling janky.
+      const vids=[...wrap.querySelectorAll("video")];
+      const playVids=()=>vids.forEach(v=>{ const p=v.play(); if(p&&p.catch)p.catch(()=>{}); });
+      const pauseVids=()=>vids.forEach(v=>v.pause());
       let active=1, timer=null;
       const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
       function setActive(i){ active=(i+cards.length)%cards.length; cards.forEach((c,k)=>c.classList.toggle("is-active",k===active)); }
@@ -2659,8 +2664,10 @@
         c.addEventListener("mouseleave",play);
       });
       if("IntersectionObserver" in window){
-        new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting?play():stop()),{threshold:.25}).observe(document.getElementById("explore"));
-      } else play();
+        new IntersectionObserver(es=>es.forEach(e=>{
+          if(e.isIntersecting){ play(); playVids(); } else { stop(); pauseVids(); }
+        }),{threshold:.25}).observe(document.getElementById("explore"));
+      } else { play(); playVids(); }
     })();
   </script>
 
@@ -2695,6 +2702,19 @@
           else{ window.scrollTo(0,dest()); root.style.scrollBehavior=prev; busy=false; }  // land exactly
         })(t0);
       });
+    })();
+  </script>
+
+  <script>
+    // Pause the hero video once it scrolls out of view (and resume on the way
+    // back). No point decoding a full-screen video the user can't see.
+    (function(){
+      const hero=document.getElementById("bgVideo");
+      if(!hero || !("IntersectionObserver" in window)) return;
+      new IntersectionObserver(es=>es.forEach(e=>{
+        if(e.isIntersecting){ const p=hero.play(); if(p&&p.catch)p.catch(()=>{}); }
+        else hero.pause();
+      }),{threshold:.1}).observe(hero);
     })();
   </script>
 

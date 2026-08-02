@@ -84,6 +84,22 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent          # project root
 SERVE_EXT = {".html", ".css", ".js", ".map", ".png", ".jpg", ".jpeg",
              ".webp", ".gif", ".svg", ".ico", ".mp4", ".woff2"}
 BLOCKED_TOP = {"app", "uploads", ".venv", "venv", "__pycache__"}   # never served
+_LONG_CACHE = {".mp4", ".webp", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".woff2"}
+
+
+def _served(path: Path, status_code: int = 200) -> FileResponse:
+    """FileResponse with a sensible Cache-Control. Media/fonts are cached for a
+    week (they rarely change and were re-downloaded on every visit, which made
+    the video-heavy homepage feel laggy); css/js get a short cache since their
+    filenames aren't versioned; HTML always revalidates so deploys show at once."""
+    ext = path.suffix.lower()
+    if ext in _LONG_CACHE:
+        cc = "public, max-age=604800"          # 7 days
+    elif ext in {".css", ".js", ".map"}:
+        cc = "public, max-age=3600"            # 1 hour
+    else:
+        cc = "no-cache"                         # html and everything else
+    return FileResponse(path, status_code=status_code, headers={"Cache-Control": cc})
 
 
 def _safe_frontend_file(rel: str) -> Path | None:
@@ -109,18 +125,18 @@ def _safe_frontend_file(rel: str) -> Path | None:
 @app.get("/robots.txt", include_in_schema=False)
 async def robots():
     f = FRONTEND_DIR / "robots.txt"
-    return FileResponse(f) if f.is_file() else FileResponse(FRONTEND_DIR / "404.html", status_code=404)
+    return _served(f) if f.is_file() else _served(FRONTEND_DIR / "404.html", status_code=404)
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap():
     f = FRONTEND_DIR / "sitemap.xml"
-    return FileResponse(f) if f.is_file() else FileResponse(FRONTEND_DIR / "404.html", status_code=404)
+    return _served(f) if f.is_file() else _served(FRONTEND_DIR / "404.html", status_code=404)
 
 
 @app.get("/", include_in_schema=False)
 async def home():
-    return FileResponse(FRONTEND_DIR / "index.html")
+    return _served(FRONTEND_DIR / "index.html")
 
 
 @app.get("/{path:path}", include_in_schema=False)
@@ -130,10 +146,10 @@ async def frontend(path: str):
         raise HTTPException(404)
     target = _safe_frontend_file(path)
     if target is not None:
-        return FileResponse(target)
+        return _served(target)
     # unknown page -> branded 404 (so /some-typo shows 404.html, not raw JSON)
     fallback = FRONTEND_DIR / "404.html"
     if fallback.is_file():
-        return FileResponse(fallback, status_code=404)
+        return _served(fallback, status_code=404)
     raise HTTPException(404)
 
