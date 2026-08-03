@@ -3896,6 +3896,16 @@
         if(n.includes('zee')) return 'https://www.zee5.com/search?q='+t;
         if(n.includes('sony')||n.includes('liv')) return 'https://www.sonyliv.com/search?searchTerm='+t;
         if(n.includes('youtube')) return 'https://www.youtube.com/results?search_query='+encodeURIComponent(title+' movie');
+        if(n.includes('crunchyroll')) return 'https://www.crunchyroll.com/search?q='+t;
+        if(n.includes('disney')) return 'https://www.disneyplus.com/search?q='+t;
+        if(n.includes('hulu')) return 'https://www.hulu.com/search?q='+t;
+        if(n.includes('max')||n.includes('hbo')) return 'https://play.max.com/search?q='+t;
+        if(n.includes('paramount')) return 'https://www.paramountplus.com/search/?q='+t;
+        if(n.includes('peacock')) return 'https://www.peacocktv.com/search?q='+t;
+        if(n.includes('aha')) return 'https://www.aha.video/search?q='+t;
+        if(n.includes('mubi')) return 'https://mubi.com/search?query='+t;
+        if(n.includes('lionsgate')) return 'https://www.lionsgateplay.com/search?q='+t;
+        if(n.includes('discovery')) return 'https://www.discoveryplus.com/search?q='+t;
         return null;
       }
 
