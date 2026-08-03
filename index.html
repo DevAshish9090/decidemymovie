@@ -864,10 +864,16 @@
   /* placeholder movie rows — counter-scrolling marquees (top→right, bottom→left) */
   .mgrid{ width:100vw; position:relative; left:50%; transform:translateX(-50%);
     display:flex; flex-direction:column; gap:clamp(12px,1.4vw,18px); }
-  .mrow{ overflow:hidden; width:100%; }
+  .mrow{ overflow:hidden; width:100%; padding:9px 0; }
   .mtrack{ display:flex; width:max-content; will-change:transform; }
   .mtrack--right{ gap:clamp(14px,1.6vw,20px); animation:slideRight 120s linear infinite; }
   .mtrack--left{ gap:clamp(14px,1.6vw,20px); animation:slideLeft 116s linear infinite; }
+  /* hover the moving reel: the row under the cursor slows to a stop so you can
+     look at it, and the poster you're on lifts a little (kept subtle). */
+  .mtrack .mcard{ transition:transform .24s cubic-bezier(.2,.7,.2,1), box-shadow .24s ease; }
+  .mrow:hover .mtrack{ animation-play-state:paused; }
+  .mtrack .mcard:hover{ transform:scale(1.06); z-index:5; box-shadow:0 16px 36px -14px rgba(0,0,0,.72); }
+  @media (hover:none){ .mtrack .mcard:hover{ transform:none; box-shadow:none; } }
   @keyframes slideRight{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
   @keyframes slideLeft{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
   @media (prefers-reduced-motion:reduce){ .mtrack{ animation:none; } }
