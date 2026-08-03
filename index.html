@@ -2740,7 +2740,6 @@
       const chevL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>';
       let gridMode=false;
       let currentCat=CATS[0];
-      let lastPicks=[];
 
       function labelFor(c){ return c==='Trending Now' ? 'trending' : c; }
       function updateSee(){
@@ -2755,18 +2754,24 @@
         return '<div class="mrow"><div class="mtrack mtrack--right">'+phSet(12)+phSet(12)+'</div></div>'
              + '<div class="mrow"><div class="mtrack mtrack--left">'+phSet(12)+phSet(12)+'</div></div>';
       }
-      function fillView(picks){
-        lastPicks=picks||[];
+      // catPages is the single source of truth: an array of "pages", each a list
+      // of picks. The reel renders one strip-pair per page; the grid flattens them
+      // all. So every loaded page survives switching between reel and grid.
+      let catPages=[];
+      function moreBtnHTML(){
+        if(!catHasMore) return '';
+        return gridMode
+          ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>'
+          : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>';
+      }
+      function renderCurrent(){
         grid.classList.toggle('is-grid', gridMode);
-        if(!picks || !picks.length){ grid.innerHTML=skeleton(); return; }
+        const all=catPages.flat();
+        if(!all.length){ grid.innerHTML=skeleton(); return; }
         if(gridMode){
-          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));   // seen = what's on screen
-          grid.innerHTML='<div class="mgridstatic">'+picks.map(movieCard).join('')+'</div>'
-            + (catHasMore ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>' : '');
+          grid.innerHTML='<div class="mgridstatic">'+all.map(movieCard).join('')+'</div>'+moreBtnHTML();
         }else{
-          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));   // seen = what's on screen
-          grid.innerHTML = stripPair(picks)
-            + (catHasMore ? '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>' : '');
+          grid.innerHTML=catPages.map(stripPair).join('')+moreBtnHTML();
         }
       }
       function stripPair(picks){
@@ -2812,7 +2817,6 @@
       const activeFilters=new Set();
       const filterBar=document.getElementById('filterBar');
       const filterChips=document.getElementById('filterChips');
-      let reelPicks=[];                                   // unfiltered category picks (for returning to reel)
       function renderFilterChips(){
         if(!filterChips) return;
         filterChips.innerHTML=FILTERS.map(f=>(
@@ -2843,9 +2847,9 @@
           if(mine!==reqId) return;                        // a newer request superseded this
           const picks=data.picks||[];
           catHasMore = !!data.has_more;                  // whether the pool has more unique movies
+          catPages=[picks];                               // fresh load resets to a single page
           catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));
-          if(!hasF) reelPicks=picks;                       // remember the unfiltered set
-          fillView(picks);
+          renderCurrent();
           if(animate){                                     // ...then fade the new ones in
             grid.classList.add('is-fresh');
             requestAnimationFrame(()=>requestAnimationFrame(()=>grid.classList.remove('is-swap')));
@@ -2859,10 +2863,11 @@
         }
       }
 
-      // "Load more" (grid view): append the next page's UNIQUE movies; hide the
-      // button once the pool is exhausted so it never recycles the same titles.
-      async function loadMoreGrid(){
-        const btn=document.getElementById('catMore');
+      // "Load more": fetch the next page, append its UNIQUE movies as a new page,
+      // and render into whichever view is active. Shared by reel + grid, so all
+      // loaded pages persist across "See all" / back.
+      async function loadMore(){
+        const btn=grid.querySelector('#catMore, #reelMore');
         if(!btn || btn.disabled) return;
         btn.disabled=true; btn.textContent='Loading…';
         const nextPage=catPage+1;
@@ -2873,38 +2878,25 @@
           catPage=nextPage;
           const fresh=(data.picks||[]).filter(p=>!catSeen.has(p.tmdb_id));
           fresh.forEach(p=>catSeen.add(p.tmdb_id));
-          const cont=grid.querySelector('.mgridstatic');
-          if(cont && fresh.length) cont.insertAdjacentHTML('beforeend', fresh.map(movieCard).join(''));
+          if(fresh.length){
+            catPages.push(fresh);
+            if(gridMode){
+              const cont=grid.querySelector('.mgridstatic');
+              if(cont) cont.insertAdjacentHTML('beforeend', fresh.map(movieCard).join(''));
+            }else{
+              const wrap=grid.querySelector('.reelmore');
+              if(wrap) wrap.insertAdjacentHTML('beforebegin', stripPair(fresh));
+            }
+          }
           catHasMore = !!data.has_more && fresh.length>0;
-        }catch(e){ /* leave the button so the user can retry */ }
-        const wrap=grid.querySelector('.mgrid__morewrap');
+          if(currentCat==='Trending Now' && catPage>=2) catHasMore=false;  // trending: only one load-more
+        }catch(e){ /* keep the button so the user can retry */ }
+        const wrap=grid.querySelector(gridMode ? '.mgrid__morewrap' : '.reelmore');
         if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
         else if(wrap){ wrap.remove(); }
       }
-      // Reel "Load more": fetch the next page and append TWO more scrolling
-      // strips below the existing ones; keep going until the pool is exhausted.
-      async function loadMoreStrips(){
-        const btn=document.getElementById('reelMore');
-        if(!btn || btn.disabled) return;
-        btn.disabled=true; btn.textContent='Loading…';
-        const nextPage=catPage+1;
-        try{
-          const res=await fetch(catUrl(nextPage));
-          if(!res.ok) throw new Error('HTTP '+res.status);
-          const data=await res.json();
-          catPage=nextPage;
-          const fresh=(data.picks||[]).filter(p=>!catSeen.has(p.tmdb_id));
-          fresh.forEach(p=>catSeen.add(p.tmdb_id));
-          const wrap=btn.closest('.reelmore');
-          if(fresh.length && wrap) wrap.insertAdjacentHTML('beforebegin', stripPair(fresh));
-          catHasMore = !!data.has_more && fresh.length>0;
-        }catch(e){ /* keep the button so the user can retry */ }
-        if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
-        else { const w=btn.closest('.reelmore'); if(w) w.remove(); }
-      }
       grid.addEventListener('click', e=>{
-        if(e.target.closest('#catMore')){ e.preventDefault(); loadMoreGrid(); }
-        if(e.target.closest('#reelMore')){ e.preventDefault(); loadMoreStrips(); }
+        if(e.target.closest('#catMore, #reelMore')){ e.preventDefault(); loadMore(); }
       });
 
       // "See all X" toggles between the scrolling reel and a static grid.
@@ -2915,10 +2907,10 @@
           if(filterBar) filterBar.hidden = !gridMode;      // filters only in grid view
           if(gridMode){
             renderFilterChips();
-            fillView(lastPicks);
+            renderCurrent();
           }else{
             if(activeFilters.size){ activeFilters.clear(); catPage=1; loadPage(); }  // reload current category, unfiltered
-            else fillView(lastPicks);
+            else renderCurrent();
           }
         });
       }
