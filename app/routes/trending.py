@@ -43,11 +43,17 @@ async def trending(page: int = Query(1, ge=1)):
     if not pool:
         return {"picks": []}
 
-    start = ((page - 1) * PAGE) % len(pool)
+    total = len(pool)
+    start = ((page - 1) * PAGE) % total
     sliced = (pool + pool)[start:start + PAGE]
     picks = [
         Pick(tmdb_id=c["id"], title=c["title"], year=c["year"], overview=c["overview"],
              poster_url=c["poster_url"], rating=c["rating"], why="Trending this week.", providers=[])
         for c in sliced
     ]
-    return {"picks": [p.model_dump() for p in picks]}
+    return {
+        "picks": [p.model_dump() for p in picks],
+        "page": page,
+        "total": total,
+        "has_more": page * PAGE < total,
+    }

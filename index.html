@@ -99,10 +99,16 @@
   }
   .links a:hover{ opacity:1; }
   .links a.is-active{ opacity:1; }
-  .links a.is-active::after{
+  .navdrop__trigger{ position:relative; }
+  /* gold underline follows the hovered nav item, resting under the active one */
+  .links a::after, .navdrop__trigger::after{
     content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
     background:var(--gold); border-radius:2px;
-  }
+    transform:scaleX(0); transform-origin:center; transition:transform .28s cubic-bezier(.2,.7,.2,1); }
+  .links a.is-active::after{ transform:scaleX(1); }
+  .links a:hover::after, .navdrop__trigger:hover::after,
+  .navdrop:hover .navdrop__trigger::after{ transform:scaleX(1); }
+  .links:hover a.is-active:not(:hover)::after{ transform:scaleX(0); }
 
   .signin{
     font-size:14px; font-weight:600; letter-spacing:.02em;
@@ -772,11 +778,12 @@
   .mgrid.is-grid{ width:auto; position:static; left:auto; transform:none; max-width:1300px; margin:0 auto; }
   .mgridstatic{ display:grid; grid-template-columns:repeat(7,1fr); gap:clamp(12px,1.2vw,18px); }
   .mgrid__morewrap{ display:flex; justify-content:center; padding:26px 0 8px; }
-  .mgrid__more{ font:inherit; font-weight:600; font-size:.92rem; color:var(--gold);
+  .reelmore{ display:flex; justify-content:center; padding:30px 0 6px; }
+  .reelmore__btn, .mgrid__more{ font:inherit; font-weight:600; font-size:.92rem; color:var(--gold);
     background:transparent; border:1px solid rgba(217,162,65,.45); border-radius:999px;
     padding:11px 30px; cursor:pointer; transition:background .18s, border-color .18s, opacity .18s; }
-  .mgrid__more:hover{ background:rgba(217,162,65,.12); border-color:var(--gold); }
-  .mgrid__more:disabled{ opacity:.6; cursor:default; }
+  .reelmore__btn:hover, .mgrid__more:hover{ background:rgba(217,162,65,.12); border-color:var(--gold); }
+  .reelmore__btn:disabled, .mgrid__more:disabled{ opacity:.6; cursor:default; }
   /* reroll swap animation */
   .mgrid{ transition:opacity .19s ease, transform .19s ease; }
   .mgrid.is-swap{ opacity:0; transform:translateY(10px) scale(.985); }
@@ -2757,11 +2764,16 @@
           grid.innerHTML='<div class="mgridstatic">'+picks.map(movieCard).join('')+'</div>'
             + (catHasMore ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>' : '');
         }else{
-          const top=picks.map(movieCard).join('');
-          const bot=picks.slice().reverse().map(movieCard).join('');
-          grid.innerHTML='<div class="mrow"><div class="mtrack mtrack--right">'+top+top+'</div></div>'
-                       + '<div class="mrow"><div class="mtrack mtrack--left">'+bot+bot+'</div></div>';
+          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));   // seen = what's on screen
+          grid.innerHTML = stripPair(picks)
+            + (catHasMore ? '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>' : '');
         }
+      }
+      function stripPair(picks){
+        const top=picks.map(movieCard).join('');
+        const bot=picks.slice().reverse().map(movieCard).join('');
+        return '<div class="mrow"><div class="mtrack mtrack--right">'+top+top+'</div></div>'
+             + '<div class="mrow"><div class="mtrack mtrack--left">'+bot+bot+'</div></div>';
       }
 
       let reqId=0;
@@ -2869,8 +2881,30 @@
         if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
         else if(wrap){ wrap.remove(); }
       }
+      // Reel "Load more": fetch the next page and append TWO more scrolling
+      // strips below the existing ones; keep going until the pool is exhausted.
+      async function loadMoreStrips(){
+        const btn=document.getElementById('reelMore');
+        if(!btn || btn.disabled) return;
+        btn.disabled=true; btn.textContent='Loading…';
+        const nextPage=catPage+1;
+        try{
+          const res=await fetch(catUrl(nextPage));
+          if(!res.ok) throw new Error('HTTP '+res.status);
+          const data=await res.json();
+          catPage=nextPage;
+          const fresh=(data.picks||[]).filter(p=>!catSeen.has(p.tmdb_id));
+          fresh.forEach(p=>catSeen.add(p.tmdb_id));
+          const wrap=btn.closest('.reelmore');
+          if(fresh.length && wrap) wrap.insertAdjacentHTML('beforebegin', stripPair(fresh));
+          catHasMore = !!data.has_more && fresh.length>0;
+        }catch(e){ /* keep the button so the user can retry */ }
+        if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
+        else { const w=btn.closest('.reelmore'); if(w) w.remove(); }
+      }
       grid.addEventListener('click', e=>{
         if(e.target.closest('#catMore')){ e.preventDefault(); loadMoreGrid(); }
+        if(e.target.closest('#reelMore')){ e.preventDefault(); loadMoreStrips(); }
       });
 
       // "See all X" toggles between the scrolling reel and a static grid.
