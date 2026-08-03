@@ -1779,11 +1779,12 @@
   .acct__item--out:hover{ background:rgba(224,138,125,.1); }
   .acct__item--out > svg:first-child{ color:#e08a7d; }
   .acct__item--out .acct__itxt b{ color:#e08a7d; }
-  .signin.is-user{ display:inline-flex; align-items:center; gap:7px; }
-  .signin.is-user::after{ content:''; width:9px; height:9px; flex:none;
-    background:currentColor;
-    -webkit-mask:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat;
-            mask:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") center/contain no-repeat; }
+  .signin.is-user{ display:inline-flex; align-items:center; gap:0; padding:0;
+    background:none; border:none; border-radius:50%; }
+  .signin.is-user:hover{ background:none; border:none; transform:none; filter:brightness(1.08); }
+  .signin.is-user::after{ display:none; }
+  .signin.is-user #acctDpMini{ width:38px; height:38px; font-size:1.02rem;
+    border:1.5px solid rgba(243,236,221,.22); }
   /* one-time code: wide tracking so digits are easy to read back and check */
   .auth__code{ font-size:1.4rem; font-weight:600; letter-spacing:.42em; text-align:center;
     font-variant-numeric:tabular-nums; padding-left:calc(.42em + 14px); }
@@ -3628,7 +3629,9 @@
         const label = u ? (u.name ? u.name.split(' ')[0] : u.email.split('@')[0]) : 'Sign in';
         const initial = u ? (u.name || u.email || '?').trim().charAt(0) : '';
         const lbl=document.getElementById('signinLabel');
-        if(lbl) lbl.textContent = label; else openBtn.textContent = label;
+        // logged in -> show ONLY the avatar (hide the name); logged out -> "Sign in"
+        if(lbl){ lbl.hidden = !!u; lbl.textContent = u ? '' : 'Sign in'; }
+        else openBtn.textContent = label;
         openBtn.title = u ? ('Signed in as '+u.email) : 'Sign in';
         openBtn.classList.toggle('is-user', !!u);
         const mini=document.getElementById('acctDpMini');
@@ -4630,7 +4633,7 @@
         document.body.style.overflow='';
       }
       if(link) link.addEventListener('click',e=>{ e.preventDefault(); open(); });
-      if(heroPill) heroPill.addEventListener('click',e=>{ e.preventDefault(); open(); });
+      // hero pills ("Search any movie" etc.) are just feature labels, not buttons
       if(backBtn) backBtn.addEventListener('click',()=>history.back());
       window.addEventListener('popstate',()=>{ if(view.classList.contains('is-open')) close(); });
 
