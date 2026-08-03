@@ -71,7 +71,8 @@ async def browse(
     if not pool:
         return {"picks": []}
 
-    start = ((page - 1) * PAGE) % len(pool)
+    total = len(pool)
+    start = ((page - 1) * PAGE) % total
     sliced = (pool + pool)[start:start + PAGE]          # wrap around
     label = genre or "Popular"
     picks = [
@@ -79,4 +80,11 @@ async def browse(
              poster_url=c["poster_url"], rating=c["rating"], why=f"{label} pick.", providers=[])
         for c in sliced
     ]
-    return {"picks": [p.model_dump() for p in picks]}
+    # has_more is True only while there are still UNIQUE movies left in the pool
+    # (before the wrap-around starts recycling), so the UI can stop "Load more".
+    return {
+        "picks": [p.model_dump() for p in picks],
+        "page": page,
+        "total": total,
+        "has_more": page * PAGE < total,
+    }

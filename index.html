@@ -805,6 +805,12 @@
   /* static "see all" grid mode */
   .mgrid.is-grid{ width:auto; position:static; left:auto; transform:none; max-width:1300px; margin:0 auto; }
   .mgridstatic{ display:grid; grid-template-columns:repeat(7,1fr); gap:clamp(12px,1.2vw,18px); }
+  .mgrid__morewrap{ display:flex; justify-content:center; padding:26px 0 8px; }
+  .mgrid__more{ font:inherit; font-weight:600; font-size:.92rem; color:var(--gold);
+    background:transparent; border:1px solid rgba(217,162,65,.45); border-radius:999px;
+    padding:11px 30px; cursor:pointer; transition:background .18s, border-color .18s, opacity .18s; }
+  .mgrid__more:hover{ background:rgba(217,162,65,.12); border-color:var(--gold); }
+  .mgrid__more:disabled{ opacity:.6; cursor:default; }
   /* reroll swap animation */
   .mgrid{ transition:opacity .19s ease, transform .19s ease; }
   .mgrid.is-swap{ opacity:0; transform:translateY(10px) scale(.985); }
@@ -2810,7 +2816,9 @@
         grid.classList.toggle('is-grid', gridMode);
         if(!picks || !picks.length){ grid.innerHTML=skeleton(); return; }
         if(gridMode){
-          grid.innerHTML='<div class="mgridstatic">'+picks.map(movieCard).join('')+'</div>';
+          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));   // seen = what's on screen
+          grid.innerHTML='<div class="mgridstatic">'+picks.map(movieCard).join('')+'</div>'
+            + (catHasMore ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>' : '');
         }else{
           const top=picks.map(movieCard).join('');
           const bot=picks.slice().reverse().map(movieCard).join('');
@@ -2821,6 +2829,22 @@
 
       let reqId=0;
       let catPage=1;                                     // reroll page for the current category
+      let catHasMore=false;                              // does the pool still have UNIQUE movies?
+      const catSeen=new Set();                           // tmdb ids already shown (grid "Load more" dedupe)
+      function catUrl(pg){
+        const fp=filterParams();
+        if(Object.keys(fp).length){
+          const q=new URLSearchParams();
+          if(currentCat!=='Trending Now') q.set('genre', GENRE_MAP[currentCat]||currentCat);
+          Object.entries(fp).forEach(([k,v])=>q.set(k,v));
+          q.set('page', pg);
+          return API+'/api/browse?'+q.toString();
+        }
+        const base = currentCat==='Trending Now'
+          ? API+'/api/trending'
+          : API+'/api/browse?genre='+encodeURIComponent(GENRE_MAP[currentCat]||currentCat);
+        return base + (base.indexOf('?')>-1?'&':'?') + 'page=' + pg;
+      }
       async function renderGrid(cat){
         currentCat=cat;
         catPage=1;                                       // new category starts at page 1
@@ -2861,27 +2885,16 @@
         }else{
           grid.innerHTML=skeleton();                      // show skeletons while loading
         }
-        const fp=filterParams();
-        const hasF=Object.keys(fp).length>0;
-        let url;
-        if(hasF){
-          const q=new URLSearchParams();
-          if(currentCat!=='Trending Now') q.set('genre', GENRE_MAP[currentCat]||currentCat);
-          Object.entries(fp).forEach(([k,v])=>q.set(k,v));
-          q.set('page', catPage);
-          url=API+'/api/browse?'+q.toString();
-        }else{
-          const base = currentCat==='Trending Now'
-            ? API+'/api/trending'
-            : API+'/api/browse?genre='+encodeURIComponent(GENRE_MAP[currentCat]||currentCat);
-          url = base + (base.indexOf('?')>-1?'&':'?') + 'page=' + catPage;
-        }
+        const hasF=Object.keys(filterParams()).length>0;
+        const url=catUrl(catPage);
         try{
           const res=await fetch(url);
           if(!res.ok) throw new Error('HTTP '+res.status);
           const data=await res.json();
           if(mine!==reqId) return;                        // a newer request superseded this
           const picks=data.picks||[];
+          catHasMore = !!data.has_more;                  // whether the pool has more unique movies
+          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));
           if(!hasF) reelPicks=picks;                       // remember the unfiltered set
           fillView(picks);
           if(animate){                                     // ...then fade the new ones in
@@ -2896,6 +2909,32 @@
           // skeletons stay on screen as a graceful fallback
         }
       }
+
+      // "Load more" (grid view): append the next page's UNIQUE movies; hide the
+      // button once the pool is exhausted so it never recycles the same titles.
+      async function loadMoreGrid(){
+        const btn=document.getElementById('catMore');
+        if(!btn || btn.disabled) return;
+        btn.disabled=true; btn.textContent='Loading…';
+        const nextPage=catPage+1;
+        try{
+          const res=await fetch(catUrl(nextPage));
+          if(!res.ok) throw new Error('HTTP '+res.status);
+          const data=await res.json();
+          catPage=nextPage;
+          const fresh=(data.picks||[]).filter(p=>!catSeen.has(p.tmdb_id));
+          fresh.forEach(p=>catSeen.add(p.tmdb_id));
+          const cont=grid.querySelector('.mgridstatic');
+          if(cont && fresh.length) cont.insertAdjacentHTML('beforeend', fresh.map(movieCard).join(''));
+          catHasMore = !!data.has_more && fresh.length>0;
+        }catch(e){ /* leave the button so the user can retry */ }
+        const wrap=grid.querySelector('.mgrid__morewrap');
+        if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
+        else if(wrap){ wrap.remove(); }
+      }
+      grid.addEventListener('click', e=>{
+        if(e.target.closest('#catMore')){ e.preventDefault(); loadMoreGrid(); }
+      });
 
       // "See all X" toggles between the scrolling reel and a static grid.
       if(seeBtn){
