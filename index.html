@@ -788,19 +788,6 @@
   .browse__see:hover{ color:var(--gold); }
   .browse__see svg{ width:16px; height:16px; }
   .browse__seebar{ max-width:1300px; margin:0 auto clamp(20px,3vh,32px); display:flex; justify-content:flex-end; }
-  .reroll{ max-width:1300px; margin:clamp(26px,4vh,44px) auto 0; padding:0 clamp(24px,5vw,64px);
-    display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
-  .reroll__text{ color:var(--muted); font-size:1rem; }
-  .reroll__btn{ display:inline-flex; align-items:center; gap:9px; cursor:pointer; font:inherit;
-    font-weight:600; font-size:.95rem; color:var(--ink); padding:12px 26px; border-radius:999px; border:none;
-    background:linear-gradient(150deg,var(--gold-soft),var(--gold));
-    box-shadow:0 12px 30px -12px rgba(212,162,76,.7); transition:transform .15s, filter .2s; }
-  .reroll__btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
-  .reroll__btn:active{ transform:scale(.97); }
-  .reroll__btn svg{ width:18px; height:18px; transform-origin:50% 50%; }
-  .reroll__btn.spin svg{ animation:reroll-spin .62s cubic-bezier(.35,.7,.25,1); }
-  @keyframes reroll-spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
-  @media (prefers-reduced-motion:reduce){ .reroll__btn.spin svg{ animation:none; } }
 
   /* static "see all" grid mode */
   .mgrid.is-grid{ width:auto; position:static; left:auto; transform:none; max-width:1300px; margin:0 auto; }
@@ -2095,14 +2082,6 @@
     </div>
 
     <div class="mgrid" id="movieGrid"><!-- movie cards injected --></div>
-
-    <div class="reroll" id="reroll">
-      <span class="reroll__text">Don&rsquo;t like any of these?</span>
-      <button class="reroll__btn" id="rerollBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
-        Reroll
-      </button>
-    </div>
   </section>
 
   <!-- ============ HIDDEN GEMS / MORE MOODS ============ -->
@@ -2963,19 +2942,6 @@
           renderFilterChips();
           catPage=1;
           loadPage();
-        });
-      }
-
-      // Reroll — fetch the NEXT page of movies for the current category
-      const rerollBtn=document.getElementById('rerollBtn');
-      if(rerollBtn){
-        rerollBtn.addEventListener('click',()=>{
-          rerollBtn.classList.remove('spin');
-          void rerollBtn.offsetWidth;                    // restart the animation from 0
-          rerollBtn.classList.add('spin');
-          rerollBtn.addEventListener('animationend',()=>rerollBtn.classList.remove('spin'),{once:true});
-          catPage++;                                      // next page = fresh movies in the same category
-          loadPage(true);
         });
       }
 
