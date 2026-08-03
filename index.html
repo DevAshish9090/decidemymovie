@@ -2758,8 +2758,16 @@
       // of picks. The reel renders one strip-pair per page; the grid flattens them
       // all. So every loaded page survives switching between reel and grid.
       let catPages=[];
+      // Trending has few titles, so allow only ONE load-more there; other
+      // categories load until their pool is exhausted.
+      const MAX_PAGES = { 'Trending Now': 2 };            // 2 pages = 1 load-more
+      function moreAllowed(){
+        const cap = MAX_PAGES[currentCat];
+        if(cap != null && catPages.length >= cap) return false;
+        return catHasMore;
+      }
       function moreBtnHTML(){
-        if(!catHasMore) return '';
+        if(!moreAllowed()) return '';
         return gridMode
           ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>'
           : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>';
@@ -2889,10 +2897,9 @@
             }
           }
           catHasMore = !!data.has_more && fresh.length>0;
-          if(currentCat==='Trending Now' && catPage>=2) catHasMore=false;  // trending: only one load-more
         }catch(e){ /* keep the button so the user can retry */ }
         const wrap=grid.querySelector(gridMode ? '.mgrid__morewrap' : '.reelmore');
-        if(catHasMore){ btn.disabled=false; btn.textContent='Load more'; }
+        if(moreAllowed()){ btn.disabled=false; btn.textContent='Load more'; }
         else if(wrap){ wrap.remove(); }
       }
       grid.addEventListener('click', e=>{
