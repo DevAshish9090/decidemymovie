@@ -2929,11 +2929,13 @@
         else if(wrap){ wrap.insertAdjacentHTML('afterend', moreBtnHTML()); wrap.remove(); }
       }
       // Reroll: jump to the next batch (deeper TMDB pages) for genuinely new movies,
-      // keeping the current view. Load more becomes available again on the new batch.
+      // keeping the current view. Scroll to the section heading FIRST (so we don't
+      // get stranded near the footer while the page re-renders), then load.
       async function reroll(){
         catBatch++; catPage=1;
+        const sec=document.getElementById('browse');
+        if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
         await loadPage();
-        grid.scrollIntoView({behavior:'smooth', block:'start'});
       }
       grid.addEventListener('click', e=>{
         if(e.target.closest('#catMore, #reelMore')){ e.preventDefault(); loadMore(); return; }
