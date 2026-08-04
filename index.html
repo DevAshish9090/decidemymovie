@@ -887,6 +887,7 @@
      look at it, and the poster you're on lifts a little (kept subtle). */
   .mtrack .mcard{ transition:transform .24s cubic-bezier(.2,.7,.2,1), box-shadow .24s ease; }
   .mrow:hover .mtrack{ animation-play-state:paused; }
+  .mrow.is-off .mtrack{ animation-play-state:paused; }   /* only animate strips on screen */
   .mtrack .mcard:hover{ transform:scale(1.06); z-index:5; box-shadow:0 16px 36px -14px rgba(0,0,0,.72); }
   @media (hover:none){ .mtrack .mcard:hover{ transform:none; box-shadow:none; } }
   @keyframes slideRight{ from{ transform:translateX(-50%); } to{ transform:translateX(0); } }
@@ -2794,6 +2795,17 @@
         const seeAll = '<button class="endbtn endbtn--see" id="reelSeeAll" type="button">See all</button>';
         return '<div class="endbar">'+seeAll+reroll+'</div>';
       }
+      // Only run the scroll animation on strips that are actually on screen —
+      // dozens of off-screen animated rows were what made it lag after Load more.
+      const rowObserver = ("IntersectionObserver" in window)
+        ? new IntersectionObserver(es=>es.forEach(e=>{
+            e.target.classList.toggle('is-off', !e.isIntersecting);
+          }), {rootMargin:'250px 0px'})
+        : null;
+      function observeRows(){
+        if(!rowObserver) return;
+        grid.querySelectorAll('.mrow').forEach(r=>rowObserver.observe(r));
+      }
       function renderCurrent(){
         grid.classList.toggle('is-grid', gridMode);
         const all=catPages.flat();
@@ -2802,6 +2814,7 @@
           grid.innerHTML='<div class="mgridstatic">'+all.map(movieCard).join('')+'</div>'+moreBtnHTML();
         }else{
           grid.innerHTML=catPages.map(stripPair).join('')+moreBtnHTML();
+          observeRows();
         }
       }
       function stripPair(picks){
@@ -2920,6 +2933,7 @@
             }else{
               const wrap=grid.querySelector('.reelmore');
               if(wrap) wrap.insertAdjacentHTML('beforebegin', stripPair(fresh));
+              observeRows();
             }
           }
           catHasMore = !!data.has_more && fresh.length>0;
