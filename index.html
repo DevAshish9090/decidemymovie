@@ -784,6 +784,17 @@
     padding:11px 30px; cursor:pointer; transition:background .18s, border-color .18s, opacity .18s; }
   .reelmore__btn:hover, .mgrid__more:hover{ background:rgba(217,162,65,.12); border-color:var(--gold); }
   .reelmore__btn:disabled, .mgrid__more:disabled{ opacity:.6; cursor:default; }
+  /* end-of-list buttons (See all / Reroll) */
+  .endbar{ display:flex; justify-content:center; gap:14px; padding:30px 0 6px; flex-wrap:wrap; }
+  .endbtn{ display:inline-flex; align-items:center; gap:8px; font:inherit; font-weight:600; font-size:.92rem;
+    border-radius:999px; padding:11px 26px; cursor:pointer;
+    transition:background .18s, border-color .18s, filter .18s, transform .15s; }
+  .endbtn svg{ width:17px; height:17px; }
+  .endbtn--see{ color:var(--ink); border:none; background:linear-gradient(150deg,var(--gold-soft),var(--gold));
+    box-shadow:0 12px 30px -12px rgba(212,162,76,.7); }
+  .endbtn--see:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+  .endbtn--reroll{ color:var(--gold); background:transparent; border:1px solid rgba(217,162,65,.45); }
+  .endbtn--reroll:hover{ background:rgba(217,162,65,.12); border-color:var(--gold); }
   /* reroll swap animation */
   .mgrid{ transition:opacity .19s ease, transform .19s ease; }
   .mgrid.is-swap{ opacity:0; transform:translateY(10px) scale(.985); }
@@ -2767,10 +2778,21 @@
         return catHasMore;
       }
       function moreBtnHTML(){
-        if(!moreAllowed()) return '';
-        return gridMode
-          ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>'
-          : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>';
+        if(moreAllowed()){
+          return gridMode
+            ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>'
+            : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>';
+        }
+        // reached the end of this batch -> offer See all (reel only) + Reroll (if more movies exist)
+        const reroll = catHasNextBatch
+          ? '<button class="endbtn endbtn--reroll" id="catReroll" type="button">'
+            + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>'
+            + 'Reroll</button>' : '';
+        if(gridMode){
+          return reroll ? '<div class="endbar">'+reroll+'</div>' : '';
+        }
+        const seeAll = '<button class="endbtn endbtn--see" id="reelSeeAll" type="button">See all</button>';
+        return '<div class="endbar">'+seeAll+reroll+'</div>';
       }
       function renderCurrent(){
         grid.classList.toggle('is-grid', gridMode);
@@ -2792,6 +2814,8 @@
       let reqId=0;
       let catPage=1;                                     // reroll page for the current category
       let catHasMore=false;                              // does the pool still have UNIQUE movies?
+      let catBatch=0;                                     // Reroll advances this to fetch a deeper batch
+      let catHasNextBatch=false;                          // are there more movies to reroll into?
       const catSeen=new Set();                           // tmdb ids already shown (grid "Load more" dedupe)
       function catUrl(pg){
         const fp=filterParams();
@@ -2799,17 +2823,17 @@
           const q=new URLSearchParams();
           if(currentCat!=='Trending Now') q.set('genre', GENRE_MAP[currentCat]||currentCat);
           Object.entries(fp).forEach(([k,v])=>q.set(k,v));
-          q.set('page', pg);
+          q.set('page', pg); q.set('batch', catBatch);
           return API+'/api/browse?'+q.toString();
         }
         const base = currentCat==='Trending Now'
           ? API+'/api/trending'
           : API+'/api/browse?genre='+encodeURIComponent(GENRE_MAP[currentCat]||currentCat);
-        return base + (base.indexOf('?')>-1?'&':'?') + 'page=' + pg;
+        return base + (base.indexOf('?')>-1?'&':'?') + 'page=' + pg + '&batch=' + catBatch;
       }
       async function renderGrid(cat){
         currentCat=cat;
-        catPage=1;                                       // new category starts at page 1
+        catPage=1; catBatch=0;                            // new category: page 1, first batch
         grid.setAttribute('data-cat',cat);
         grid.classList.toggle('is-grid', gridMode);
         updateSee();
@@ -2855,6 +2879,7 @@
           if(mine!==reqId) return;                        // a newer request superseded this
           const picks=data.picks||[];
           catHasMore = !!data.has_more;                  // whether the pool has more unique movies
+          catHasNextBatch = !!data.has_next_batch;        // whether Reroll can fetch new movies
           catPages=[picks];                               // fresh load resets to a single page
           catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));
           renderCurrent();
@@ -2897,13 +2922,26 @@
             }
           }
           catHasMore = !!data.has_more && fresh.length>0;
+          catHasNextBatch = !!data.has_next_batch;
         }catch(e){ /* keep the button so the user can retry */ }
         const wrap=grid.querySelector(gridMode ? '.mgrid__morewrap' : '.reelmore');
         if(moreAllowed()){ btn.disabled=false; btn.textContent='Load more'; }
-        else if(wrap){ wrap.remove(); }
+        else if(wrap){ wrap.insertAdjacentHTML('afterend', moreBtnHTML()); wrap.remove(); }
+      }
+      // Reroll: jump to the next batch (deeper TMDB pages) for genuinely new movies,
+      // keeping the current view. Load more becomes available again on the new batch.
+      async function reroll(){
+        catBatch++; catPage=1;
+        await loadPage();
+        grid.scrollIntoView({behavior:'smooth', block:'start'});
       }
       grid.addEventListener('click', e=>{
-        if(e.target.closest('#catMore, #reelMore')){ e.preventDefault(); loadMore(); }
+        if(e.target.closest('#catMore, #reelMore')){ e.preventDefault(); loadMore(); return; }
+        if(e.target.closest('#catReroll')){ e.preventDefault(); reroll(); return; }
+        if(e.target.closest('#reelSeeAll')){
+          e.preventDefault();
+          if(!gridMode && seeBtn){ seeBtn.click(); }     // switch to the grid view
+        }
       });
 
       // "See all X" toggles between the scrolling reel and a static grid.

@@ -30,9 +30,11 @@ POOL_SIZE = 100   # up to ~5 TMDB pages
 PAGE = 28         # movies returned per request
 
 
-async def _pool(genre, min_rating, max_runtime, min_runtime, min_year, max_year):
+async def _pool(genre, min_rating, max_runtime, min_runtime, min_year, max_year, batch=0):
+    # each batch = the next 5 TMDB pages, so Reroll fetches genuinely new movies
+    page_start = batch * 5 + 1
     key = (f"browsepool::{(genre or 'all').lower()}"
-           f"::r{min_rating}::mx{max_runtime}::mn{min_runtime}::y{min_year}-{max_year}")
+           f"::r{min_rating}::mx{max_runtime}::mn{min_runtime}::y{min_year}-{max_year}::b{batch}")
     pool = await cache.get(key)
     if pool is None:
         filters = QueryFilters(
@@ -44,7 +46,7 @@ async def _pool(genre, min_rating, max_runtime, min_runtime, min_year, max_year)
             min_year=min_year,
             max_year=max_year,
         )
-        candidates = await tmdb.discover(filters, pool_size=POOL_SIZE)
+        candidates = await tmdb.discover(filters, pool_size=POOL_SIZE, page_start=page_start)
         pool = [
             {"id": c["id"], "title": c["title"], "year": c["year"], "overview": c["overview"],
              "poster_url": c["poster_url"], "rating": c["rating"]}
@@ -63,9 +65,10 @@ async def browse(
     min_runtime: int | None = Query(None, ge=1),
     min_year: int | None = Query(None, ge=1900),
     max_year: int | None = Query(None, ge=1900),
+    batch: int = Query(0, ge=0),
 ):
     try:
-        pool = await _pool(genre, min_rating, max_runtime, min_runtime, min_year, max_year)
+        pool = await _pool(genre, min_rating, max_runtime, min_runtime, min_year, max_year, batch)
     except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=502, detail=f"TMDB request failed ({e.response.status_code}).")
     if not pool:
@@ -87,4 +90,6 @@ async def browse(
         "page": page,
         "total": total,
         "has_more": page * PAGE < total,
+        # a full pool almost certainly means TMDB has yet another batch to reroll into
+        "has_next_batch": total >= POOL_SIZE,
     }

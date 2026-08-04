@@ -64,10 +64,11 @@ class TMDBClient:
             "label": "show" if media_type == "tv" else "movie",
         }
 
-    async def discover(self, filters, pool_size: int = 25, space: str = "adult", platforms: list[str] | None = None) -> list[dict]:
+    async def discover(self, filters, pool_size: int = 25, space: str = "adult", platforms: list[str] | None = None, page_start: int = 1) -> list[dict]:
         """
         Filtered browse via /discover. Fetches enough pages to build a candidate
         POOL of ~pool_size items (TMDB returns 20 per page) for the LLM to rerank.
+        page_start lets callers fetch a DEEPER batch (Reroll = next batch of pages).
         """
         media_type = filters.media_type
         base_params: dict[str, str | int | float | bool] = {
@@ -121,7 +122,7 @@ class TMDBClient:
             r.raise_for_status()
             return r.json().get("results", [])
 
-        pages = await asyncio.gather(*[fetch_page(p) for p in range(1, pages_needed + 1)])
+        pages = await asyncio.gather(*[fetch_page(p) for p in range(page_start, page_start + pages_needed)])
         collected: list[dict] = []
         for pg in pages:
             collected.extend(pg)
@@ -173,10 +174,10 @@ class TMDBClient:
                 return item["backdrop_path"]
         return None
 
-    async def trending(self, count: int = 40) -> list[dict]:
-        """What's trending on TMDB this week (movies)."""
+    async def trending(self, count: int = 40, page_start: int = 1) -> list[dict]:
+        """What's trending on TMDB this week (movies). page_start fetches a deeper batch."""
         out: list[dict] = []
-        for page in (1, 2, 3):
+        for page in (page_start, page_start + 1, page_start + 2):
             r = await self._client.get("/trending/movie/week", params={"language": "en-US", "page": page})
             r.raise_for_status()
             for item in r.json().get("results", []):
