@@ -124,8 +124,14 @@ class TMDBClient:
 
         pages = await asyncio.gather(*[fetch_page(p) for p in range(page_start, page_start + pages_needed)])
         collected: list[dict] = []
+        seen: set = set()
         for pg in pages:
-            collected.extend(pg)
+            for item in pg:
+                mid = item.get("id")
+                if mid is None or mid in seen:
+                    continue          # TMDB repeats movies across pages; keep each once
+                seen.add(mid)
+                collected.append(item)
         return [self._normalise(item, media_type) for item in collected[:pool_size]]
 
     async def top_backdrop(self, genre_id: int) -> str | None:
@@ -177,10 +183,15 @@ class TMDBClient:
     async def trending(self, count: int = 40, page_start: int = 1) -> list[dict]:
         """What's trending on TMDB this week (movies). page_start fetches a deeper batch."""
         out: list[dict] = []
+        seen: set = set()
         for page in (page_start, page_start + 1, page_start + 2):
             r = await self._client.get("/trending/movie/week", params={"language": "en-US", "page": page})
             r.raise_for_status()
             for item in r.json().get("results", []):
+                mid = item.get("id")
+                if mid is None or mid in seen:
+                    continue
+                seen.add(mid)
                 out.append(self._normalise(item, "movie"))
                 if len(out) >= count:
                     return out

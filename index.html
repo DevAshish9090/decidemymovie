@@ -2833,7 +2833,7 @@
       }
       async function renderGrid(cat){
         currentCat=cat;
-        catPage=1; catBatch=0;                            // new category: page 1, first batch
+        catPage=1; catBatch=0; catSeen.clear();          // new category: page 1, first batch, fresh seen-set
         grid.setAttribute('data-cat',cat);
         grid.classList.toggle('is-grid', gridMode);
         updateSee();
@@ -2877,11 +2877,12 @@
           if(!res.ok) throw new Error('HTTP '+res.status);
           const data=await res.json();
           if(mine!==reqId) return;                        // a newer request superseded this
-          const picks=data.picks||[];
+          const raw=data.picks||[];
+          const picks=raw.filter(p=>!catSeen.has(p.tmdb_id));   // never re-show a movie already seen this session
           catHasMore = !!data.has_more;                  // whether the pool has more unique movies
           catHasNextBatch = !!data.has_next_batch;        // whether Reroll can fetch new movies
           catPages=[picks];                               // fresh load resets to a single page
-          catSeen.clear(); picks.forEach(p=>catSeen.add(p.tmdb_id));
+          picks.forEach(p=>catSeen.add(p.tmdb_id));
           renderCurrent();
           if(animate){                                     // ...then fade the new ones in
             grid.classList.add('is-fresh');
@@ -2956,7 +2957,7 @@
             renderFilterChips();
             renderCurrent();
           }else{
-            if(activeFilters.size){ activeFilters.clear(); catPage=1; loadPage(); }  // reload current category, unfiltered
+            if(activeFilters.size){ activeFilters.clear(); catPage=1; catBatch=0; catSeen.clear(); loadPage(); }  // reload current category, unfiltered
             else renderCurrent();
           }
         });
@@ -2971,7 +2972,7 @@
           if(turnOn && f.group){ FILTERS.filter(x=>x.group===f.group).forEach(x=>activeFilters.delete(x.id)); }
           if(turnOn) activeFilters.add(id); else activeFilters.delete(id);
           renderFilterChips();
-          catPage=1;
+          catPage=1; catBatch=0; catSeen.clear();          // filter changed the query -> fresh results
           loadPage();
         });
       }
