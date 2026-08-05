@@ -81,17 +81,24 @@ async def movie(movie_id: int, type: str = "movie"):
     if not trailer_key:
         trailer_key = next((v["key"] for v in vids if v.get("site") == "YouTube"), None)
 
-    # a few reviews (trimmed)
+    # reviews — prefer SHORT ones that fit a card; keep full text for "Read more".
     reviews = []
-    for rv in (d.get("reviews") or {}).get("results", [])[:3]:
-        content = rv.get("content", "") or ""
-        if len(content) > 380:
-            content = content[:380].rstrip() + "\u2026"
+    for rv in (d.get("reviews") or {}).get("results", []):
+        content = " ".join((rv.get("content") or "").split())   # collapse newlines/extra spaces
+        if not content:
+            continue
+        is_long = len(content) > 240
+        full = content if len(content) <= 1500 else content[:1500].rstrip() + "\u2026"
+        excerpt = (content[:240].rstrip() + "\u2026") if is_long else content
         reviews.append({
             "author": rv.get("author", ""),
-            "content": content,
             "rating": (rv.get("author_details") or {}).get("rating"),
+            "excerpt": excerpt,
+            "content": full,
+            "truncated": is_long,
         })
+    reviews.sort(key=lambda r: len(r["excerpt"]))            # short reviews that fit fully lead
+    reviews = reviews[:5]
 
     # top-billed cast (TMDB returns these in billing order already)
     cast = []
@@ -119,7 +126,7 @@ async def movie(movie_id: int, type: str = "movie"):
             "rating": round(s.get("vote_average", 0.0), 1),
             "media_type": mtype,
         })
-        if len(similar) >= 3:
+        if len(similar) >= 4:
             break
 
     # movies use release_date + runtime; TV uses first_air_date + episode_run_time[]

@@ -1548,14 +1548,19 @@
   .mvm__overview{ color:#3a3a36; font-size:.98rem; line-height:1.65; margin:0; }
   .mvm__sec{ display:flex; flex-direction:column; gap:14px; }
   .mvm__h4{ font-family:"Instrument Sans",sans-serif; font-size:.78rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#a9791f; margin:0; }
-  .mvm__review{ padding:16px 18px; border-radius:14px;
+  .mvm__review{ padding:18px 20px; border-radius:16px; margin-bottom:12px;
     background:rgba(16,20,22,.66); -webkit-backdrop-filter:blur(12px) saturate(140%); backdrop-filter:blur(12px) saturate(140%);
     border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 26px -16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); }
-  .mvm__revhead{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; }
-  .mvm__revauthor{ font-weight:600; color:#fff; font-size:.92rem; }
-  .mvm__revrating{ color:var(--gold-soft); font-weight:700; font-size:.82rem; }
-  .mvm__revtext{ margin:0; color:rgba(255,255,255,.8); font-size:.88rem; line-height:1.6; }
-  .mvm__simrow{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .mvm__review:last-child{ margin-bottom:0; }
+  .mvm__revhead{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+  .mvm__revauthor{ font-weight:700; color:#fff; font-size:.95rem; }
+  .mvm__revrating{ color:var(--gold-soft); font-weight:700; font-size:.8rem; white-space:nowrap;
+    background:rgba(233,199,132,.13); padding:3px 10px; border-radius:999px; }
+  .mvm__revtext{ margin:0; color:rgba(255,255,255,.82); font-size:.9rem; line-height:1.65; }
+  .mvm__revmore{ margin-top:9px; background:none; border:none; padding:0; cursor:pointer;
+    color:var(--gold-soft); font:inherit; font-size:.82rem; font-weight:600; }
+  .mvm__revmore:hover{ text-decoration:underline; }
+  .mvm__simrow{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
   .mvm__sim{ display:block; text-decoration:none; }
   .mvm__sim img{ width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:12px; border:1px solid #e8e5db; transition:transform .25s, box-shadow .25s; }
   .mvm__sim:hover img{ transform:translateY(-4px); box-shadow:0 16px 30px -16px rgba(0,0,0,.35); }
@@ -4010,9 +4015,12 @@
         }
         const provRow = '<div class="mvm__provs">'+(provs?provs:'')+'<p class="mvm__avail">'+availText+'</p></div>';
         const reviews=(d.reviews||[]).map(r=>(
-          '<div class="mvm__review"><div class="mvm__revhead"><span class="mvm__revauthor">'+esc(r.author)+'</span>'
+          '<div class="mvm__review">'
+          +'<div class="mvm__revhead"><span class="mvm__revauthor">'+esc(r.author||'Anonymous')+'</span>'
           +(r.rating?'<span class="mvm__revrating">\u2605 '+r.rating+'/10</span>':'')+'</div>'
-          +'<p class="mvm__revtext">'+esc(r.content)+'</p></div>'
+          +'<p class="mvm__revtext" data-excerpt="'+esc(r.excerpt)+'" data-full="'+esc(r.content)+'">'+esc(r.excerpt)+'</p>'
+          +(r.truncated?'<button class="mvm__revmore" type="button" data-exp="0">Read more</button>':'')
+          +'</div>'
         )).join('');
         const reviewsSec = reviews ? '<div class="mvm__sec"><h4 class="mvm__h4">Reviews</h4>'+reviews+'</div>' : '';
         const cast=(d.cast||[]).map(c=>{
@@ -4296,6 +4304,16 @@
         if(th){ e.preventDefault(); openMovie(th.getAttribute('data-id'), th.getAttribute('data-type')); return; }
         const card=e.target.closest('.mcard');
         if(card){ e.preventDefault(); const id=card.getAttribute('data-id'); if(id) openMovie(id, card.getAttribute('data-type')); return; }
+        const rm=e.target.closest('.mvm__revmore');
+        if(rm){
+          e.preventDefault();
+          const p=rm.previousElementSibling;
+          const exp=rm.dataset.exp==='1';
+          if(p){ p.textContent = exp ? (p.dataset.excerpt||'') : (p.dataset.full||''); }
+          rm.textContent = exp ? 'Read more' : 'Show less';
+          rm.dataset.exp = exp ? '0' : '1';
+          return;
+        }
         const sim=e.target.closest('.mvm__sim[data-simid]');
         if(sim){ e.preventDefault(); openMovie(sim.getAttribute('data-simid'), sim.getAttribute('data-simtype')); }
       });
