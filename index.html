@@ -1548,9 +1548,10 @@
   .mvm__overview{ color:#3a3a36; font-size:.98rem; line-height:1.65; margin:0; }
   .mvm__sec{ display:flex; flex-direction:column; gap:14px; }
   .mvm__h4{ font-family:"Instrument Sans",sans-serif; font-size:.78rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#a9791f; margin:0; }
-  .mvm__revgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-  @media (max-width:760px){ .mvm__revgrid{ grid-template-columns:1fr; } }
+  .mvm__revgrid{ display:flex; flex-wrap:wrap; justify-content:center; gap:14px; }
+  @media (max-width:760px){ .mvm__review{ flex-basis:100% !important; } }
   .mvm__review{ position:relative; display:flex; flex-direction:column; padding:20px 20px 16px;
+    flex:0 0 calc((100% - 28px) / 3);
     border-radius:16px; background:#ffffff; border:1px solid #ece7db;
     box-shadow:0 10px 26px -18px rgba(0,0,0,.18); }
   .mvm__review--hidden{ display:none; }
@@ -1571,8 +1572,8 @@
     color:#a9791f; font:inherit; font-weight:700; font-size:.85rem; border:1px solid #e4d8ba;
     border-radius:999px; padding:9px 24px; transition:background .18s, border-color .18s; }
   .mvm__revseemore:hover{ background:#f6ecd4; border-color:#e6c98a; }
-  .mvm__simrow{ display:flex; flex-wrap:wrap; justify-content:center; gap:20px; }
-  .mvm__sim{ width:160px; }
+  .mvm__simrow{ display:flex; flex-wrap:wrap; justify-content:center; gap:28px; }
+  .mvm__sim{ width:178px; }
   .mvm__sim{ display:block; text-decoration:none; }
   .mvm__sim img{ width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:12px; border:1px solid #e8e5db; transition:transform .25s, box-shadow .25s; }
   .mvm__sim:hover img{ transform:translateY(-4px); box-shadow:0 16px 30px -16px rgba(0,0,0,.35); }
@@ -2835,8 +2836,11 @@
         }
       }
       function stripPair(picks){
-        const top=picks.map(movieCard).join('');
-        const bot=picks.slice().reverse().map(movieCard).join('');
+        // split across the two strips so a movie never appears in BOTH rows
+        const mid=Math.ceil(picks.length/2);
+        const a=picks.slice(0,mid), b=picks.slice(mid);
+        const top=a.map(movieCard).join('');
+        const bot=b.map(movieCard).join('');
         return '<div class="mrow"><div class="mtrack mtrack--right">'+top+top+'</div></div>'
              + '<div class="mrow"><div class="mtrack mtrack--left">'+bot+bot+'</div></div>';
       }
