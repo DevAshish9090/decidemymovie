@@ -1548,25 +1548,30 @@
   .mvm__overview{ color:#3a3a36; font-size:.98rem; line-height:1.65; margin:0; }
   .mvm__sec{ display:flex; flex-direction:column; gap:14px; }
   .mvm__h4{ font-family:"Instrument Sans",sans-serif; font-size:.78rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#a9791f; margin:0; }
-  .mvm__review{ position:relative; padding:22px 24px 18px; border-radius:16px; margin:0 0 14px;
-    background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
-    border:1px solid rgba(255,255,255,.1); box-shadow:0 12px 30px -18px rgba(0,0,0,.55); }
-  .mvm__review:last-child{ margin-bottom:0; }
-  .mvm__review::before{ content:'\201C'; position:absolute; top:6px; left:18px;
-    font-family:Georgia,"Times New Roman",serif; font-size:52px; line-height:1;
-    color:var(--gold-soft); opacity:.26; pointer-events:none; }
-  .mvm__revtext{ position:relative; margin:16px 0 0; padding:0; border:0; quotes:none;
-    color:rgba(255,255,255,.86); font-size:.93rem; line-height:1.7; font-style:normal; }
-  .mvm__revmore{ margin-top:9px; background:none; border:none; padding:0; cursor:pointer;
-    color:var(--gold-soft); font:inherit; font-size:.82rem; font-weight:600; }
+  .mvm__revgrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media (max-width:760px){ .mvm__revgrid{ grid-template-columns:1fr; } }
+  .mvm__review{ position:relative; display:flex; flex-direction:column; padding:20px 20px 16px;
+    border-radius:16px; background:#ffffff; border:1px solid #ece7db;
+    box-shadow:0 10px 26px -18px rgba(0,0,0,.18); }
+  .mvm__review--hidden{ display:none; }
+  .mvm__review::before{ content:'\201C'; position:absolute; top:2px; left:15px;
+    font-family:Georgia,"Times New Roman",serif; font-size:46px; line-height:1;
+    color:#caa25c; opacity:.5; pointer-events:none; }
+  .mvm__revtext{ position:relative; margin:16px 0 0; padding:0; border:0; quotes:none; flex:1;
+    color:#3c392f; font-size:.88rem; line-height:1.62; font-style:normal; }
+  .mvm__revmore{ margin-top:8px; align-self:flex-start; background:none; border:none; padding:0;
+    cursor:pointer; color:#a9791f; font:inherit; font-size:.8rem; font-weight:700; }
   .mvm__revmore:hover{ text-decoration:underline; }
-  .mvm__revfoot{ display:flex; align-items:center; justify-content:space-between; gap:12px;
-    margin-top:16px; padding-top:13px; border-top:1px solid rgba(255,255,255,.09); }
-  .mvm__revauthor{ font-weight:700; color:#fff; font-size:.9rem; letter-spacing:.01em; }
-  .mvm__revstars{ display:inline-flex; align-items:center; color:var(--gold);
-    font-size:.86rem; letter-spacing:1px; white-space:nowrap; }
-  .mvm__revnum{ margin-left:8px; color:rgba(255,255,255,.5); font-size:.76rem; letter-spacing:0; }
-  .mvm__simrow{ display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 124px));
+  .mvm__revfoot{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin-top:14px; padding-top:12px; border-top:1px solid #efe8d9; }
+  .mvm__revauthor{ font-weight:700; color:#1d1b15; font-size:.84rem; letter-spacing:.01em; }
+  .mvm__revstars{ display:inline-flex; align-items:center; color:#e3a92b; font-size:.82rem; letter-spacing:.5px; white-space:nowrap; }
+  .mvm__revnum{ margin-left:6px; color:#9c968a; font-size:.72rem; letter-spacing:0; }
+  .mvm__revseemore{ align-self:center; margin-top:2px; background:transparent; cursor:pointer;
+    color:#a9791f; font:inherit; font-weight:700; font-size:.85rem; border:1px solid #e4d8ba;
+    border-radius:999px; padding:9px 24px; transition:background .18s, border-color .18s; }
+  .mvm__revseemore:hover{ background:#f6ecd4; border-color:#e6c98a; }
+  .mvm__simrow{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 170px));
     gap:16px; justify-content:start; }
   .mvm__sim{ display:block; text-decoration:none; }
   .mvm__sim img{ width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:12px; border:1px solid #e8e5db; transition:transform .25s, box-shadow .25s; }
@@ -4021,20 +4026,26 @@
           availText='Not currently available in India.';
         }
         const provRow = '<div class="mvm__provs">'+(provs?provs:'')+'<p class="mvm__avail">'+availText+'</p></div>';
-        const reviews=(d.reviews||[]).map(r=>{
+        const revList=(d.reviews||[]);
+        const reviewCards=revList.map((r,i)=>{
           let stars='';
           if(r.rating!=null){
             const f=Math.max(0,Math.min(5,Math.round(r.rating/2)));
             stars='<span class="mvm__revstars">'+'\u2605'.repeat(f)+'\u2606'.repeat(5-f)
                   +'<span class="mvm__revnum">'+r.rating+'/10</span></span>';
           }
-          return '<figure class="mvm__review">'
+          return '<figure class="mvm__review'+(i>=3?' mvm__review--hidden':'')+'">'
             +'<blockquote class="mvm__revtext" data-excerpt="'+esc(r.excerpt)+'" data-full="'+esc(r.content)+'">'+esc(r.excerpt)+'</blockquote>'
             +(r.truncated?'<button class="mvm__revmore" type="button" data-exp="0">Read more</button>':'')
             +'<figcaption class="mvm__revfoot"><span class="mvm__revauthor">'+esc(r.author||'Anonymous')+'</span>'+stars+'</figcaption>'
             +'</figure>';
         }).join('');
-        const reviewsSec = reviews ? '<div class="mvm__sec"><h4 class="mvm__h4">Reviews</h4>'+reviews+'</div>' : '';
+        const reviewsSec = revList.length
+          ? '<div class="mvm__sec"><h4 class="mvm__h4">Reviews</h4>'
+            +'<div class="mvm__revgrid">'+reviewCards+'</div>'
+            +(revList.length>3?'<button class="mvm__revseemore" id="revSeeMore" type="button">See more reviews</button>':'')
+            +'</div>'
+          : '';
         const cast=(d.cast||[]).map(c=>{
           const av = c.profile_url
             ? '<img class="mvm__castimg" src="'+c.profile_url+'" alt="'+esc(c.name)+'" loading="lazy">'
@@ -4316,6 +4327,14 @@
         if(th){ e.preventDefault(); openMovie(th.getAttribute('data-id'), th.getAttribute('data-type')); return; }
         const card=e.target.closest('.mcard');
         if(card){ e.preventDefault(); const id=card.getAttribute('data-id'); if(id) openMovie(id, card.getAttribute('data-type')); return; }
+        const sm=e.target.closest('#revSeeMore');
+        if(sm){
+          e.preventDefault();
+          const sec=sm.closest('.mvm__sec');
+          if(sec) sec.querySelectorAll('.mvm__review--hidden').forEach(c=>c.classList.remove('mvm__review--hidden'));
+          sm.remove();
+          return;
+        }
         const rm=e.target.closest('.mvm__revmore');
         if(rm){
           e.preventDefault();

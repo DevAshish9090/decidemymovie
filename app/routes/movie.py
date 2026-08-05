@@ -98,7 +98,7 @@ async def movie(movie_id: int, type: str = "movie"):
             "truncated": is_long,
         })
     reviews.sort(key=lambda r: len(r["excerpt"]))            # short reviews that fit fully lead
-    reviews = reviews[:5]
+    reviews = reviews[:6]
 
     # top-billed cast (TMDB returns these in billing order already)
     cast = []
