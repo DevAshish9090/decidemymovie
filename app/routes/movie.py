@@ -126,7 +126,7 @@ async def movie(movie_id: int, type: str = "movie"):
             "rating": round(s.get("vote_average", 0.0), 1),
             "media_type": mtype,
         })
-        if len(similar) >= 4:
+        if len(similar) >= 8:
             break
 
     # movies use release_date + runtime; TV uses first_air_date + episode_run_time[]

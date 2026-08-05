@@ -1548,19 +1548,26 @@
   .mvm__overview{ color:#3a3a36; font-size:.98rem; line-height:1.65; margin:0; }
   .mvm__sec{ display:flex; flex-direction:column; gap:14px; }
   .mvm__h4{ font-family:"Instrument Sans",sans-serif; font-size:.78rem; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#a9791f; margin:0; }
-  .mvm__review{ padding:18px 20px; border-radius:16px; margin-bottom:12px;
-    background:rgba(16,20,22,.66); -webkit-backdrop-filter:blur(12px) saturate(140%); backdrop-filter:blur(12px) saturate(140%);
-    border:1px solid rgba(255,255,255,.12); box-shadow:0 10px 26px -16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08); }
+  .mvm__review{ position:relative; padding:22px 24px 18px; border-radius:16px; margin:0 0 14px;
+    background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+    border:1px solid rgba(255,255,255,.1); box-shadow:0 12px 30px -18px rgba(0,0,0,.55); }
   .mvm__review:last-child{ margin-bottom:0; }
-  .mvm__revhead{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
-  .mvm__revauthor{ font-weight:700; color:#fff; font-size:.95rem; }
-  .mvm__revrating{ color:var(--gold-soft); font-weight:700; font-size:.8rem; white-space:nowrap;
-    background:rgba(233,199,132,.13); padding:3px 10px; border-radius:999px; }
-  .mvm__revtext{ margin:0; color:rgba(255,255,255,.82); font-size:.9rem; line-height:1.65; }
+  .mvm__review::before{ content:'\201C'; position:absolute; top:6px; left:18px;
+    font-family:Georgia,"Times New Roman",serif; font-size:52px; line-height:1;
+    color:var(--gold-soft); opacity:.26; pointer-events:none; }
+  .mvm__revtext{ position:relative; margin:16px 0 0; padding:0; border:0; quotes:none;
+    color:rgba(255,255,255,.86); font-size:.93rem; line-height:1.7; font-style:normal; }
   .mvm__revmore{ margin-top:9px; background:none; border:none; padding:0; cursor:pointer;
     color:var(--gold-soft); font:inherit; font-size:.82rem; font-weight:600; }
   .mvm__revmore:hover{ text-decoration:underline; }
-  .mvm__simrow{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .mvm__revfoot{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:16px; padding-top:13px; border-top:1px solid rgba(255,255,255,.09); }
+  .mvm__revauthor{ font-weight:700; color:#fff; font-size:.9rem; letter-spacing:.01em; }
+  .mvm__revstars{ display:inline-flex; align-items:center; color:var(--gold);
+    font-size:.86rem; letter-spacing:1px; white-space:nowrap; }
+  .mvm__revnum{ margin-left:8px; color:rgba(255,255,255,.5); font-size:.76rem; letter-spacing:0; }
+  .mvm__simrow{ display:grid; grid-template-columns:repeat(auto-fill, minmax(104px, 124px));
+    gap:16px; justify-content:start; }
   .mvm__sim{ display:block; text-decoration:none; }
   .mvm__sim img{ width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:12px; border:1px solid #e8e5db; transition:transform .25s, box-shadow .25s; }
   .mvm__sim:hover img{ transform:translateY(-4px); box-shadow:0 16px 30px -16px rgba(0,0,0,.35); }
@@ -4014,14 +4021,19 @@
           availText='Not currently available in India.';
         }
         const provRow = '<div class="mvm__provs">'+(provs?provs:'')+'<p class="mvm__avail">'+availText+'</p></div>';
-        const reviews=(d.reviews||[]).map(r=>(
-          '<div class="mvm__review">'
-          +'<div class="mvm__revhead"><span class="mvm__revauthor">'+esc(r.author||'Anonymous')+'</span>'
-          +(r.rating?'<span class="mvm__revrating">\u2605 '+r.rating+'/10</span>':'')+'</div>'
-          +'<p class="mvm__revtext" data-excerpt="'+esc(r.excerpt)+'" data-full="'+esc(r.content)+'">'+esc(r.excerpt)+'</p>'
-          +(r.truncated?'<button class="mvm__revmore" type="button" data-exp="0">Read more</button>':'')
-          +'</div>'
-        )).join('');
+        const reviews=(d.reviews||[]).map(r=>{
+          let stars='';
+          if(r.rating!=null){
+            const f=Math.max(0,Math.min(5,Math.round(r.rating/2)));
+            stars='<span class="mvm__revstars">'+'\u2605'.repeat(f)+'\u2606'.repeat(5-f)
+                  +'<span class="mvm__revnum">'+r.rating+'/10</span></span>';
+          }
+          return '<figure class="mvm__review">'
+            +'<blockquote class="mvm__revtext" data-excerpt="'+esc(r.excerpt)+'" data-full="'+esc(r.content)+'">'+esc(r.excerpt)+'</blockquote>'
+            +(r.truncated?'<button class="mvm__revmore" type="button" data-exp="0">Read more</button>':'')
+            +'<figcaption class="mvm__revfoot"><span class="mvm__revauthor">'+esc(r.author||'Anonymous')+'</span>'+stars+'</figcaption>'
+            +'</figure>';
+        }).join('');
         const reviewsSec = reviews ? '<div class="mvm__sec"><h4 class="mvm__h4">Reviews</h4>'+reviews+'</div>' : '';
         const cast=(d.cast||[]).map(c=>{
           const av = c.profile_url
