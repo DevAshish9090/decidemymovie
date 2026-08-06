@@ -583,7 +583,7 @@
     position:relative; display:flex; flex-direction:column;
     border:1px solid var(--line); border-radius:22px; overflow:hidden;
     background:linear-gradient(160deg, rgba(255,255,255,.03), rgba(255,255,255,0) 55%), var(--ink-2);
-    padding:clamp(12px,1.2vw,18px);
+    padding:clamp(10px,1vw,14px);
     transform:scale(1); opacity:1; cursor:pointer;          /* all cards full + bright */
     transition:transform .5s cubic-bezier(.4,0,.2,1), box-shadow .5s ease, border-color .5s ease;
   }
@@ -596,15 +596,8 @@
 
   /* picture on top */
   .pcard__art{
-    position:relative; overflow:hidden; border-radius:12px; aspect-ratio:16/10;
+    position:relative; overflow:hidden; border-radius:14px; aspect-ratio:16/10;
     background:#0A1519; border:none;
-    /* feather the clip so its edges melt into the card instead of a hard box */
-    -webkit-mask-image:radial-gradient(120% 120% at 50% 45%, #000 62%, transparent 100%);
-            mask-image:radial-gradient(120% 120% at 50% 45%, #000 62%, transparent 100%);
-  }
-  .pcard__art::after{
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(to bottom, rgba(19,24,28,0) 55%, var(--ink-2) 100%);
   }
   .pcard__art video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .pcard__art figcaption{ z-index:2; }
@@ -620,25 +613,22 @@
   .fart--dice{ background:radial-gradient(120% 100% at 40% 30%, #35201c, #0A1519 72%); color:#d69a86; }
 
   /* text in the middle */
-  .pcard__body{ padding:14px 4px 0; text-align:center; flex:1; }
+  .pcard__body{ padding:13px 6px 0; text-align:center; flex:1; }
   .pcard__name{ font-family:"Fraunces",serif; font-weight:400; font-size:clamp(1.3rem,1.7vw,1.6rem); line-height:1; letter-spacing:.02em; color:var(--cream); }
-  .pcard__tag{ display:inline-block; margin-top:8px; font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); }
-  .pcard__text{ margin-top:10px; font-size:.82rem; line-height:1.5; color:var(--muted); }
+  .pcard__tag{ display:inline-block; margin-top:0; font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .pcard__text{ margin-top:9px; font-size:.84rem; line-height:1.5; color:var(--muted); }
 
   /* button at the bottom */
   .pcard__btn{
-    margin-top:16px; align-self:center;
+    margin-top:14px; align-self:center;
     display:inline-flex; align-items:center; gap:10px;
-    padding:6px 6px 6px 22px; border-radius:999px;
-    background:rgba(255,255,255,0.1);
-    -webkit-backdrop-filter:blur(10px) saturate(160%); backdrop-filter:blur(10px) saturate(160%);
-    border:1px solid rgba(255,255,255,0.28); border-top:1px solid rgba(255,255,255,0.45);
-    box-shadow:0 6px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
-    color:#fff; opacity:1; pointer-events:auto; transition:transform .25s, background .25s;
+    padding:5px 5px 5px 20px; border-radius:999px;
+    background:transparent; border:1px solid rgba(217,162,65,.5);
+    color:var(--gold); opacity:1; pointer-events:auto; transition:transform .25s, background .25s, border-color .25s;
   }
 
-  .pcard__btn:hover{ transform:translateY(-2px); background:rgba(255,255,255,0.16); }
-  .pcard__btn .lbl{ font-family:"Fraunces",serif; font-size:1rem; letter-spacing:.02em; color:#fff; white-space:nowrap; }
+  .pcard__btn:hover{ transform:translateY(-2px); background:rgba(217,162,65,.1); border-color:var(--gold); }
+  .pcard__btn .lbl{ font-family:"Instrument Sans",system-ui,sans-serif; font-weight:600; font-size:.9rem; letter-spacing:0; color:var(--gold); white-space:nowrap; }
   .pcard__btn .go{ flex:0 0 auto; width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
     background:linear-gradient(180deg,#FFDD7A 0%,#E8A93D 100%); color:#2a2205;
     box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.5); }
@@ -2629,14 +2619,14 @@
       const wrap=document.getElementById("pcards");
       if(!wrap) return;
       const FEATURES=[
-        {name:"The Vibe", tag:"mood \u2192 movie", art:"vibe", cap:"read the room",
-         text:"Tell it how you feel, whether restless, tender, wired or wistful, in plain words, and get a film chosen for exactly that.",
+        {name:"The Vibe", tag:"mood \u2192 movie", art:"vibe", btn:"Match My Mood",
+         text:"Tell us your mood \u2014 we\u2019ll recommend the perfect movie.",
          media:'video/vibe.mp4'},
-        {name:"Describe", tag:"name that film", art:"describe", cap:"tip of your tongue",
-         text:"You remember the scene, not the name. Describe whatever you recall, a moment, an actor, an ending, and it names the film.",
+        {name:"Describe", tag:"describe that movie", art:"describe", btn:"Find that movie",
+         text:"Remember a scene or an actor? We\u2019ll find it from your memory.",
          media:'video/describe.mp4'},
-        {name:"Roll the Dice", tag:"surprise me", art:"dice", cap:"leave it to chance",
-         text:"Can\u2019t choose? Let fate. One tap, one film, no scrolling. Like it, watch it. Don\u2019t, roll again.",
+        {name:"Roll the Dice", tag:"surprise me", art:"dice", btn:"Surprise me",
+         text:"Skip the browsing \u2014 get one great movie, instantly.",
          media:'video/roll.mp4'},
       ];
       wrap.innerHTML=FEATURES.map((f,i)=>(
@@ -2644,9 +2634,8 @@
         + '<figure class="pcard__art">'
         +   '<video src="'+f.media+'" muted loop playsinline preload="metadata"></video>'
         +   '</figure>'
-        + '<div class="pcard__body"><h3 class="pcard__name">'+f.name+'</h3>'
-        +   '<span class="pcard__tag">'+f.tag+'</span><p class="pcard__text">'+f.text+'</p></div>'
-        + '<a href="#" class="pcard__btn" data-feature="'+f.art+'" aria-label="Open '+f.name+'"><span class="lbl">'+f.name+'</span>'
+        + '<div class="pcard__body"><span class="pcard__tag">'+f.tag+'</span><p class="pcard__text">'+f.text+'</p></div>'
+        + '<a href="#" class="pcard__btn" data-feature="'+f.art+'" aria-label="Open '+f.name+'"><span class="lbl">'+f.btn+'</span>'
         +   '<span class="go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>'
         + '</article>'
       )).join("");
