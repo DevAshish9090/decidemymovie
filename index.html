@@ -4131,7 +4131,7 @@
           bodyEl.querySelectorAll('[data-watchpicker]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); pk.hidden=false; }));
           bodyEl.querySelectorAll('[data-watchclose]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); pk.hidden=true; }));
           pk.addEventListener('click',ev=>{ if(ev.target===pk) pk.hidden=true; });          // backdrop closes
-          pk.querySelectorAll('[data-watchopt]').forEach(a=>a.addEventListener('click',()=>{ setTimeout(()=>{ pk.hidden=true; },60); }));
+          // options open in a new tab and the picker stays open (close via backdrop or the X)
         }
       }
 
