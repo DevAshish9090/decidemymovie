@@ -4015,10 +4015,15 @@
                     d.vote_count?(Intl.NumberFormat().format(d.vote_count)+' votes'):null].filter(Boolean).join('   \u00b7   ');
         const genres=(d.genres||[]).map(g=>'<span class="mvm__genre">'+esc(g)+'</span>').join('');
         const watchLabel = d.avail_kind==='rent_buy' ? 'Rent or buy' : 'Watch now';
-        // the platforms this movie is actually on (that we have a real link for)
+        // the platforms this movie is actually on (that we have a real link for),
+        // de-duplicated by destination so Amazon/Prime (and other) variants collapse to one
+        const _seenUrl=new Set();
         const watchable = (d.providers||[])
           .map(p=>({name:p.name, logo:p.logo_url, url:watchUrl(p.name, d.title)}))
-          .filter(p=>p.url);
+          .filter(p=>{
+            if(!p.url || _seenUrl.has(p.url)) return false;
+            _seenUrl.add(p.url); return true;
+          });
         let watchBtn, watchPicker='';
         if(watchable.length>=2){
           // multiple platforms -> the button opens a chooser
