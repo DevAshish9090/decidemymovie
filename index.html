@@ -1541,6 +1541,22 @@
   @media (max-width:560px){ .mvm__quick{ margin-left:0; align-self:flex-start; padding-bottom:0; } }
 
   .mvm__provs{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .mvm__picker{ position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center;
+    padding:20px; background:rgba(10,14,16,.55); -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+  .mvm__picker[hidden]{ display:none; }
+  .mvm__picker__card{ width:min(360px,92vw); background:#fbfaf7; border:1px solid #e7e2d6; border-radius:18px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.6); overflow:hidden; animation:wlPop .18s cubic-bezier(.2,.8,.2,1); }
+  .mvm__picker__head{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:16px 18px; font-weight:700; color:#1c1a14; font-size:1rem; border-bottom:1px solid #eee7d8; }
+  .mvm__picker__x{ background:none; border:none; font-size:1.5rem; line-height:1; color:#8a8578; cursor:pointer; padding:0 2px; }
+  .mvm__picker__x:hover{ color:#1c1a14; }
+  .mvm__picker__list{ padding:10px; display:flex; flex-direction:column; gap:4px; }
+  .mvm__picker__opt{ display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px;
+    text-decoration:none; color:#26241d; font-weight:600; font-size:.92rem; transition:background .16s; }
+  .mvm__picker__opt:hover{ background:#f1ece0; }
+  .mvm__picker__opt img{ width:34px; height:34px; border-radius:8px; object-fit:cover; flex:none; }
+  .mvm__picker__opt span{ flex:1; }
+  .mvm__picker__arrow{ width:16px; height:16px; color:#a9791f; }
   .mvm__prov{ width:34px; height:34px; border-radius:9px; object-fit:cover; border:1px solid #e2ddcf; }
   .mvm__avail{ width:100%; font-size:.92rem; color:#4a4a45; margin:2px 0 0; }
   .mvm__avail b{ color:#161616; font-weight:600; }
@@ -3998,12 +4014,30 @@
         const meta=[d.year, runtime(d.runtime), d.rating?('\u2605 '+d.rating.toFixed(1)+' TMDB'):null,
                     d.vote_count?(Intl.NumberFormat().format(d.vote_count)+' votes'):null].filter(Boolean).join('   \u00b7   ');
         const genres=(d.genres||[]).map(g=>'<span class="mvm__genre">'+esc(g)+'</span>').join('');
-        const wname=(d.providers&&d.providers[0])?d.providers[0].name:null;
-        const watchHref = firstWatchUrl(d.providers, d.title);   // direct platform, or null
         const watchLabel = d.avail_kind==='rent_buy' ? 'Rent or buy' : 'Watch now';
-        const watchBtn = watchHref
-          ? '<a class="mvm__btn mvm__btn--gold" href="'+watchHref+'" target="_blank" rel="noopener">'+play+watchLabel+'</a>'
-          : '<span class="mvm__btn mvm__btn--gold is-disabled">'+play+'Watch now</span>';
+        // the platforms this movie is actually on (that we have a real link for)
+        const watchable = (d.providers||[])
+          .map(p=>({name:p.name, logo:p.logo_url, url:watchUrl(p.name, d.title)}))
+          .filter(p=>p.url);
+        let watchBtn, watchPicker='';
+        if(watchable.length>=2){
+          // multiple platforms -> the button opens a chooser
+          watchBtn='<button type="button" class="mvm__btn mvm__btn--gold" data-watchpicker>'+play+watchLabel+'</button>';
+          watchPicker='<div class="mvm__picker" id="watchPicker" hidden>'
+            +'<div class="mvm__picker__card" role="dialog" aria-label="Choose a platform">'
+            +  '<div class="mvm__picker__head"><span>Where do you want to watch?</span>'
+            +    '<button type="button" class="mvm__picker__x" data-watchclose aria-label="Close">\u00d7</button></div>'
+            +  '<div class="mvm__picker__list">'
+            +    watchable.map(p=>'<a class="mvm__picker__opt" href="'+p.url+'" target="_blank" rel="noopener" data-watchopt>'
+            +      (p.logo?'<img src="'+p.logo+'" alt="">':'')+'<span>'+esc(p.name)+'</span>'
+            +      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mvm__picker__arrow"><path d="M7 17L17 7M9 7h8v8"/></svg></a>').join('')
+            +  '</div></div></div>';
+        }else{
+          const href = watchable.length===1 ? watchable[0].url : firstWatchUrl(d.providers, d.title);
+          watchBtn = href
+            ? '<a class="mvm__btn mvm__btn--gold" href="'+href+'" target="_blank" rel="noopener">'+play+watchLabel+'</a>'
+            : '<span class="mvm__btn mvm__btn--gold is-disabled">'+play+'Watch now</span>';
+        }
         const trailerBtn = d.trailer_key
           ? '<button type="button" class="mvm__btn mvm__btn--ghost" data-trailer="'+esc(d.trailer_key)+'">'+ytIcon+'Trailer</button>'
           : '<span class="mvm__btn mvm__btn--ghost is-disabled">'+ytIcon+'Trailer</span>';
@@ -4085,11 +4119,20 @@
           +   castSec
           +   reviewsSec
           +   simSec
-          + '</div>';
+          + '</div>'
+          + watchPicker;
         // bind these directly with a hard stop so no other handler can hijack the click
         bodyEl.querySelectorAll('[data-wish]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation(); toggleWatch(b); }));
         bodyEl.querySelectorAll('[data-seen]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation(); toggleSeen(b); }));
         bodyEl.querySelectorAll('[data-trailer]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); ev.stopImmediatePropagation(); openTrailer(b.getAttribute('data-trailer')); }));
+        // watch-now platform picker (only present when 2+ platforms)
+        const pk=bodyEl.querySelector('#watchPicker');
+        if(pk){
+          bodyEl.querySelectorAll('[data-watchpicker]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); pk.hidden=false; }));
+          bodyEl.querySelectorAll('[data-watchclose]').forEach(b=>b.addEventListener('click',ev=>{ ev.preventDefault(); pk.hidden=true; }));
+          pk.addEventListener('click',ev=>{ if(ev.target===pk) pk.hidden=true; });          // backdrop closes
+          pk.querySelectorAll('[data-watchopt]').forEach(a=>a.addEventListener('click',()=>{ setTimeout(()=>{ pk.hidden=true; },60); }));
+        }
       }
 
       let req=0;
