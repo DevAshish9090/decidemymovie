@@ -641,8 +641,13 @@
   }
 
   /* ===== quick-actions grid (6 cards, no arrows, rounded) ===== */
-  .qgrid{ max-width:1040px; margin:0 auto;
-    display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(12px,1.4vw,22px); }
+  .qgrid{ max-width:1120px; margin:clamp(26px,4.5vh,56px) auto 0;
+    display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(14px,1.5vw,24px);
+    padding:clamp(22px,3vh,34px) clamp(20px,3vw,40px);
+    background:rgba(255,255,255,.035);
+    -webkit-backdrop-filter:blur(16px) saturate(120%); backdrop-filter:blur(16px) saturate(120%);
+    border:1px solid rgba(255,255,255,.07); border-radius:24px;
+    box-shadow:0 24px 60px -30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); }
   .qcard{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .qcard__ic{ display:grid; place-items:center; width:clamp(52px,4.6vw,66px); aspect-ratio:1;
     border-radius:28%; background:#e9c784; color:#161006; margin-bottom:12px; }
