@@ -1,105 +1,130 @@
-.venv\Scripts\Activate.ps1
-# DecideMyMovie — Backend
+# DecideMyMovie
 
-The conversational search slice: a user describes what they're in the mood for,
-and the API returns picks with a "why this pick" line.
+**Stop scrolling. Start watching.** Describe your mood or a half-remembered scene, and DecideMyMovie gives you **one confident pick** — like a friend with great taste — then tells you exactly where to stream it.
+
+ **Live:** [decidemymovie.com](https://decidemymovie.com)
+
+---
+
+## What it does
+
+Choosing what to watch takes longer than watching it. DecideMyMovie replaces forty minutes of scrolling with a single decision:
+
+- **Match my mood** — say how you feel in plain words and get a film chosen for exactly that.
+- **Describe that movie** — remember a scene, an actor, or an ending but not the title? Describe it and get the film.
+- **Surprise me** — one tap, one great movie, no browsing.
+- **Browse by mood, category, or what's trending**, save titles to a personal **watchlist**, watch trailers, and jump straight to the streaming service that has it.
+
+---
+
+## Features
+
+- **LLM-powered recommendations** over the live TMDB catalogue — mood and natural-language queries turn into one confident pick.
+- **Full authentication system, built from scratch** — email sign-up with OTP verification, passwordless login, password reset, secure `HttpOnly`-cookie sessions, and **Google Sign-In** via a server-side OAuth redirect flow (works on Brave, mobile, and with ad-blockers).
+- **Branded transactional emails** (verification, welcome, reset) sent asynchronously so responses stay fast.
+- **Persistent watchlist** synced to the account, with merge-on-login for anonymous sessions.
+- **Rich movie details** — cast, trailers, reviews, and "more like this," plus **one-click links** to every streaming provider a title is available on.
+- **Single-origin architecture** — FastAPI serves both the API and the frontend from one domain (no CORS, same-site cookies).
+- **Responsive single-page frontend** with lazy-loaded media and smooth, GPU-friendly animations.
+
+---
+
+## Tech stack
+
+| Layer | Technologies |
+|---|---|
+| **Backend** | Python, FastAPI, SQLAlchemy (async), Pydantic |
+| **Database** | PostgreSQL (production), SQLite (local/tests) |
+| **AI / Data** | Groq LLM, TMDB API |
+| **Frontend** | Vanilla JavaScript, HTML, CSS (single-page app) |
+| **Auth** | OTP email, sessions (HttpOnly cookies), Google OAuth 2.0 |
+| **Email** | Resend (SMTP), ImprovMX inbound forwarding |
+| **Infra** | Railway (app + Postgres), custom domain, HTTPS |
+
+---
+
+## How it works
 
 ```
-frontend  ──POST /api/search──▶  FastAPI
-                                   │
-                    ┌──────────────┼───────────────┐
-                    ▼              ▼                ▼
-              llm.translate    tmdb.discover    llm.explain
-              (query→filters)  (filters→movies) (movies→"why")
+Browser ──▶  FastAPI (single origin: app + /api)
+                 │
+                 ├─▶  Groq LLM        →  mood / description → ranked picks
+                 ├─▶  TMDB API        →  metadata, posters, cast, trailers, providers
+                 └─▶  PostgreSQL      →  users, sessions, watchlists
+
+Auth:  email OTP · passwordless · password reset · Google OAuth (redirect flow)
 ```
 
-The LLM **never names movies**. It only (1) turns the query into structured
-filters and (2) writes a one-line reason per result. TMDB picks the actual
-titles. That's what keeps it fast, cheap, and hallucination-free.
+The backend builds cached candidate pools from TMDB and uses the LLM to rank and explain picks. The frontend and API are served from a single origin, so sessions use same-site `HttpOnly` cookies with no CORS surface.
 
-## Project layout
+---
 
-```
-app/
-  main.py          FastAPI app, CORS, health check
-  config.py        loads .env (single source of truth for settings)
-  schemas.py       Pydantic models — the contract between layers
-  llm.py           the ONLY file that knows about Gemini (swap providers here)
-  tmdb.py          async TMDB client (discover + search + genre mapping)
-  routes/search.py the /api/search endpoint
-```
+## Getting started
 
-## Setup
+> Requires Python 3.11+ and a TMDB API key. A Groq API key enables AI recommendations.
 
 ```bash
-# 1. create + activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+# 1. Clone
+git clone https://github.com/DevAshish9090/decidemymovie.git
+cd decidemymovie
 
-# 2. install dependencies
+# 2. Create a virtual environment
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 3. add your keys
-cp .env.example .env               # Windows: copy .env.example .env
-#   then open .env and paste your TMDB_ACCESS_TOKEN
-#   GEMINI_API_KEY can stay blank for now (see "fallback mode" below)
+# 4. Configure environment
+cp env.example .env              # then fill in the values below
 
-# 4. run it
+# 5. Run
 uvicorn app.main:app --reload
 ```
 
-Open **http://localhost:8000/docs** — FastAPI gives you an interactive page
-where you can fire a `POST /api/search` without writing any frontend code yet.
+Open **http://localhost:8000**.
 
-Try a body like:
+### Environment variables
 
-```json
-{ "query": "a slow-burn mystery from the 90s, nothing too violent", "limit": 6 }
+| Variable | Description |
+|---|---|
+| `TMDB_ACCESS_TOKEN` | TMDB API read access token |
+| `GROQ_API_KEY` | Groq API key (for AI recommendations) |
+| `DATABASE_URL` | Postgres URL in production; SQLite is used by default locally |
+| `PUBLIC_URL` | Base URL of the deployment (e.g. `https://decidemymovie.com`) |
+| `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Email delivery (Resend) |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Sign-In |
+
+See `env.example` for the full list. **Never commit your `.env` or API keys.**
+
+---
+
+## Project structure
+
+```
+app/
+  main.py            # FastAPI app: serves the SPA + /api from one origin
+  routes/            # auth, movie, browse, trending, report, ...
+  models.py          # SQLAlchemy models
+  db.py              # engine, session, startup migrations
+  tmdb.py            # TMDB client
+  llm.py             # LLM ranking / recommendations
+index.html           # single-page frontend (source of truth for the UI)
+requirements.txt
 ```
 
-## Fallback mode (no Gemini key yet)
+---
 
-With `GEMINI_API_KEY` blank, the app still runs: it skips the LLM and does a
-plain TMDB text search on your query, with a generic "why" line. This lets you
-confirm the TMDB half works today. Add the Gemini key and the real
-query→filters→reasons pipeline switches on automatically — no code change.
+## Roadmap
 
-Get a free key at https://aistudio.google.com/apikey.
+- [ ] Client-side routing for shareable movie / section URLs
+- [ ] Swap in a paid LLM tier for faster recommendations
+- [ ] More curated mood collections
 
-## Connecting your frontend
+---
 
-Point your search box at `http://localhost:8000/api/search`:
+## About
 
-```js
-const res = await fetch("http://localhost:8000/api/search", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ query: userInput, limit: 8 }),
-});
-const data = await res.json();   // { query, interpreted, llm_used, picks: [...] }
-// each pick: { tmdb_id, title, year, overview, poster_url, rating, why }
-```
+Built by **Ashish Verma** — [GitHub](https://github.com/DevAshish9090) · [LinkedIn](https://linkedin.com/in/DevAshish9090)
 
-When you deploy, add your live domain to `CORS_ORIGINS` in `.env`.
-
-## Security
-
-- **Never commit `.env`** — it's gitignored. Keys live only there.
-- If a key is ever shown in a screenshot/screen-share, regenerate it (TMDB:
-  Settings → API → Regenerate Key).
-
-## TMDB attribution (required before going live)
-
-TMDB's terms require attribution. Add to your footer:
-
-> This product uses the TMDB API but is not endorsed or certified by TMDB.
-
-…alongside the TMDB logo (download from themoviedb.org).
-
-## What's next
-
-- Caching layer (cache identical queries + TMDB responses — essential on free tiers)
-- Rate limiting per IP
-- SQLite + SQLAlchemy models (watchlist, seen-it, taste seeding)
-- Remaining endpoints: refine, "just decide for me", availability, etc.
-```
+Movie data and images courtesy of [TMDB](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
