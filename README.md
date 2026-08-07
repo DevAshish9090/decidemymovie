@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="banner.png" alt="DecideMyMovie" width="700">
+<img src="banner.png" alt="DecideMyMovie" width="500">
 
 <br>
 
