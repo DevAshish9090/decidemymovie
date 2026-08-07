@@ -1,10 +1,23 @@
-# DecideMyMovie
+<div align="center">
+
+<img src="logo.png" alt="DecideMyMovie" width="1000">
+
+<br>
 
 **Stop scrolling. Start watching.** Describe your mood or a half-remembered scene, and DecideMyMovie gives you **one confident pick** — like a friend with great taste — then tells you exactly where to stream it.
 
- **Live:** [decidemymovie.com](https://decidemymovie.com)
+<br>
+
+[![Live Demo](https://img.shields.io/badge/Live-decidemymovie.com-F59E0B?style=for-the-badge)](https://decidemymovie.com)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)](LICENSE)
+
+</div>
 
 ---
+
 
 ## What it does
 
