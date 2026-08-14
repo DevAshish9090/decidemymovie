@@ -4059,7 +4059,7 @@
           const verb = d.avail_kind==='stream' ? 'Streaming on' : 'Available to rent or buy on';
           availText=verb+' <b>'+list+'</b> in India.';
         } else {
-          availText='Not currently available in India.';
+          availText='Currently unavailable in India.';
         }
         const provRow = '<div class="mvm__provs">'+(provs?provs:'')+'<p class="mvm__avail">'+availText+'</p></div>';
         const revList=(d.reviews||[]);
@@ -4865,5 +4865,20 @@
     })();
   </script>
 
+<script>
+  /* Preload the mood emoji art so the "Match My Mood" picker appears instantly
+     (previously these lazy-loaded on open, causing a 1-2s delay). Runs when the
+     browser is idle so it never competes with the initial page load. */
+  (function(){
+    var imgs=['img/mood-faces.webp',
+      'emoji/mood-crowdpleaser.png','emoji/mood-dark.png','emoji/mood-emotional.png',
+      'emoji/mood-family.png','emoji/mood-laugh.png','emoji/mood-loweffort.png',
+      'emoji/mood-mindbent.png','emoji/mood-pumped.png','emoji/mood-romantic.png',
+      'emoji/mood-scared.png','emoji/mood-thoughtful.png','emoji/mood-unwind.png'];
+    function go(){ imgs.forEach(function(src){ var i=new Image(); i.src=src; }); }
+    if('requestIdleCallback' in window){ requestIdleCallback(go,{timeout:2500}); }
+    else { window.addEventListener('load', function(){ setTimeout(go,1200); }); }
+  })();
+</script>
 </body>
 </html>
