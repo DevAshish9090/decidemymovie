@@ -1855,9 +1855,49 @@
     .auth__main{ padding:28px 26px; }
   }
 
+  /* ===== mobile "open on desktop" notice ===== */
+  .mgate{ display:none; }
+  @media (max-width:820px){
+    .mgate{ position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
+      padding:30px; text-align:center;
+      background:radial-gradient(120% 90% at 50% 0%, #16211f, #0a1210 58%, #060c0b); }
+    body{ overflow:hidden; }
+  }
+  .mgate__card{ max-width:400px; }
+  .mgate__logo{ font-family:"Fraunces",serif; font-weight:700; font-size:22px; color:#F3ECDD; margin-bottom:28px; }
+  .mgate__logo span{ color:var(--gold); }
+  .mgate__ic{ width:58px; height:58px; color:var(--gold); margin:0 auto 22px; display:block; }
+  .mgate__title{ font-family:"Instrument Sans",system-ui,sans-serif; font-weight:400; font-size:1.7rem;
+    color:#F6F2EA; letter-spacing:-.01em; line-height:1.2; margin:0 0 14px; }
+  .mgate__text{ color:rgba(243,236,221,.76); font-size:1rem; line-height:1.6; margin:0 0 20px; }
+  .mgate__text b{ color:var(--gold); font-weight:600; }
+  .mgate__soon{ display:inline-block; margin:0 0 26px; font-size:.76rem; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase; color:rgba(243,236,221,.55);
+    border:1px solid rgba(243,236,221,.18); border-radius:999px; padding:7px 16px; }
+  .mgate__go{ display:block; margin:0 auto; background:none; border:none; cursor:pointer; font:inherit;
+    font-size:.86rem; color:rgba(243,236,221,.5); text-decoration:underline; text-underline-offset:3px; }
+  .mgate__go:hover{ color:var(--gold); }
 </style>
 </head>
 <body>
+<div class="mgate" id="mgate" role="dialog" aria-label="Best viewed on desktop">
+  <div class="mgate__card">
+    <div class="mgate__logo"><span>D</span>ecideMyMovie</div>
+    <svg class="mgate__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>
+    <h1 class="mgate__title">Best on a bigger screen</h1>
+    <p class="mgate__text">DecideMyMovie isn&rsquo;t ready for mobile just yet. For the full experience, open <b>decidemymovie.com</b> on a laptop or desktop.</p>
+    <span class="mgate__soon">Mobile version coming soon</span>
+    <button class="mgate__go" type="button" id="mgateGo">Continue anyway</button>
+  </div>
+</div>
+<script>
+  (function(){
+    var g=document.getElementById('mgate'), b=document.getElementById('mgateGo');
+    if(b){ b.addEventListener('click',function(){ g.style.display='none'; document.body.style.overflow='auto'; }); }
+  })();
+</script>
   <!-- ============================================================= -->
   <!-- CONFIG: when you put this site online, change the URL below to -->
   <!-- your live backend address (e.g. https://api.decidemymovie.com) -->
