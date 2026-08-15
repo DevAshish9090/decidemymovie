@@ -101,7 +101,16 @@
   .links a.is-active{ opacity:1; }
   .navdrop__trigger{ position:relative; }
   /* gold underline follows the hovered nav item, resting under the active one */
-  /* nav underline removed */
+  /* gold underline follows the cursor on the TOP-LEVEL nav items only
+     (Home / Search / Categories / My List) — never on the dropdown menu items */
+  .links > a::after, .navdrop__trigger::after{
+    content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px;
+    background:var(--gold); border-radius:2px;
+    transform:scaleX(0); transform-origin:center; transition:transform .28s cubic-bezier(.2,.7,.2,1); }
+  .links > a.is-active::after{ transform:scaleX(1); }
+  .links > a:hover::after, .navdrop__trigger:hover::after,
+  .navdrop:hover .navdrop__trigger::after{ transform:scaleX(1); }
+  .links:hover > a.is-active:not(:hover)::after{ transform:scaleX(0); }
 
   .signin{
     font-size:14px; font-weight:600; letter-spacing:.02em;
