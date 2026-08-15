@@ -424,8 +424,6 @@
     .feats__track{ transition:none; }
   }
 
-
-
   /* right/left swipe arrows, vertically centred on the carousel */
   .feats{ position:relative; }
   .feats__nav{
@@ -643,25 +641,6 @@
   }
 
   /* ===== quick-actions grid (6 cards, no arrows, rounded) ===== */
-  .qgrid{ max-width:1120px; margin:clamp(26px,4.5vh,56px) auto 0;
-    display:grid; grid-template-columns:repeat(6,1fr); gap:clamp(14px,1.5vw,24px);
-    padding:clamp(22px,3vh,34px) clamp(20px,3vw,40px);
-    background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
-    border:1px solid rgba(255,255,255,.08); border-radius:24px;
-    box-shadow:0 24px 60px -30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); }
-  .qcard{ display:flex; flex-direction:column; align-items:center; text-align:center; }
-  .qcard__ic{ display:grid; place-items:center; width:clamp(52px,4.6vw,66px); aspect-ratio:1;
-    border-radius:28%; background:#e9c784; color:#161006; margin-bottom:12px; }
-  .qcard__ic svg{ width:42%; height:42%; }
-  .qcard__title{ font-family:"Instrument Sans",system-ui,sans-serif; font-weight:600;
-    font-size:clamp(.82rem,.95vw,.94rem); line-height:1.16; letter-spacing:-.005em; color:var(--cream); }
-
-  @media (max-width:1080px){ .qgrid{ grid-template-columns:repeat(3,1fr); } }
-  @media (max-width:680px){ .qgrid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:430px){ .qgrid{ grid-template-columns:1fr; } }
-
-
-
   /* ================= NEW HERO ================= */
   .hero{ position:relative; min-height:100vh; min-height:100svh; overflow:hidden; display:flex; }
   .hero__media{ position:absolute; inset:0; z-index:0; }
@@ -2099,7 +2078,6 @@
       <p class="explore-head__sub">Ways to discover your next favorite movie.</p>
     </div>
     <div class="pcards" id="pcards"><!-- injected --></div>
-    <div class="qgrid" id="qgrid"><!-- injected --></div>
   </section>
 
   <!-- ============ TRENDING / BROWSE (final page) ============ -->
@@ -2620,31 +2598,7 @@
     </div>
   </div>
 
-  <script>
-    (function(){
-      const g=document.getElementById('qgrid'); if(!g) return;
-      const Q=[
-        {title:'Streaming in One Click', color:'#E4614C', text:'See all available streaming options instantly.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M8.1 15.9a5.5 5.5 0 0 1 0-7.8M15.9 8.1a5.5 5.5 0 0 1 0 7.8M5.3 18.7a9.5 9.5 0 0 1 0-13.4M18.7 5.3a9.5 9.5 0 0 1 0 13.4"/></svg>'},
-        {title:'Browse by Mood', color:'#E0A93B', text:'Find movies that match how you feel right now.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0"/><circle cx="9" cy="10" r="1.05" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.05" fill="currentColor" stroke="none"/></svg>'},
-        {title:'Explore Categories', color:'#A78BFA', text:'From trending to classic, explore what you love.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>'},
-        {title:'Your Watchlist', color:'#5FBF8E', text:'Save, organize and never lose track of what to watch.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1z"/><path d="M12 12.2l-1.7-1.6a1.55 1.55 0 1 1 1.7-2.5 1.55 1.55 0 1 1 1.7 2.5z" fill="currentColor" stroke="none"/></svg>'},
-        {title:'Kids &amp; Family', color:'#5EA8F0', text:'Curated picks everyone in your family will enjoy.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.2" cy="9" r="2.2"/><path d="M15.6 19a4.2 4.2 0 0 1 5.4-3.8"/></svg>'},
-        {title:'Feeling Lucky?', color:'#C08AF0', text:'Let us surprise you with something great to watch.',
-         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="4.2" rx="1"/><path d="M5.2 12.7V20a1 1 0 0 0 1 1h11.6a1 1 0 0 0 1-1v-7.3"/><line x1="12" y1="8.5" x2="12" y2="21"/><path d="M12 8.5C10.5 5 7.5 5 8 7c.3 1.2 4 1.5 4 1.5z"/><path d="M12 8.5C13.5 5 16.5 5 16 7c-.3 1.2-4 1.5-4 1.5z"/></svg>'},
-      ];
-      g.innerHTML=Q.map(c=>(
-        '<article class="qcard">'
-        + '<span class="qcard__ic">'+c.icon+'</span>'
-        + '<h3 class="qcard__title">'+c.title+'</h3>'
-        + '</article>'
-      )).join('');
-    })();
-  </script>
+  
 
   <script>
     // Respect reduced-motion: hold the poster frame instead of playing
