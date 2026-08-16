@@ -10,7 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
 from .config import settings
 from .db import init_db
@@ -146,9 +146,27 @@ async def frontend(path: str):
     # API namespace stays JSON — never fall through to the HTML site 404 for it.
     if path == "api" or path.startswith("api/"):
         raise HTTPException(404)
+
+    # Clean URLs: redirect any *.html request to the extensionless path
+    # (/privacy.html -> /privacy, /index.html -> /). 301 = permanent/canonical.
+    if path.endswith(".html"):
+        if path == "index.html":
+            return RedirectResponse(url="/", status_code=301)
+        return RedirectResponse(url="/" + path[:-5], status_code=301)
+
+    # Exact file (css / js / images / etc.)
     target = _safe_frontend_file(path)
     if target is not None:
         return _served(target)
+
+    # Clean URL: /privacy -> serve privacy.html (only when the last segment
+    # has no extension, so real asset requests aren't affected).
+    last = path.rsplit("/", 1)[-1]
+    if path and "." not in last:
+        html = _safe_frontend_file(path + ".html")
+        if html is not None:
+            return _served(html)
+
     # unknown page -> branded 404 (so /some-typo shows 404.html, not raw JSON)
     fallback = FRONTEND_DIR / "404.html"
     if fallback.is_file():
