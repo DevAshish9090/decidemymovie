@@ -578,7 +578,7 @@
   /* ===== 3-up feature cards, centre active ===== */
   .pcards{
     display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(16px,1.8vw,26px);
-    max-width:920px; margin:0 auto; width:100%; align-items:stretch;
+    max-width:1010px; margin:0 auto; width:100%; align-items:stretch;
   }
   .pcard{
     position:relative; display:flex; flex-direction:column;
@@ -616,7 +616,7 @@
   /* text in the middle */
   .pcard__body{ padding:13px 6px 0; text-align:center; flex:1; }
   .pcard__name{ font-family:"Fraunces",serif; font-weight:400; font-size:clamp(1.3rem,1.7vw,1.6rem); line-height:1; letter-spacing:.02em; color:var(--cream); }
-  .pcard__tag{ display:inline-block; margin-top:0; font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .pcard__tag{ display:inline-block; margin-top:0; font-size:12.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#F6F2EA; }
   .pcard__text{ margin-top:9px; font-size:.84rem; line-height:1.5; color:var(--muted); }
 
   /* button at the bottom */
@@ -643,7 +643,7 @@
 
   /* ===== quick-actions grid (6 cards, no arrows, rounded) ===== */
   /* quick-actions: feature highlights (icon, label, description) with separators */
-  .qbar{ max-width:1220px; margin:clamp(26px,4vh,50px) auto 0;
+  .qbar{ max-width:1220px; margin:clamp(46px,7vh,88px) auto 0;
     display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch; }
   .qbar__item{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
     gap:9px; padding:6px clamp(20px,2.6vw,42px); max-width:190px; }
