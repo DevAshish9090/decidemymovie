@@ -642,6 +642,20 @@
   }
 
   /* ===== quick-actions grid (6 cards, no arrows, rounded) ===== */
+  /* quick-actions: feature highlights (icon, label, description) with separators */
+  .qbar{ max-width:1220px; margin:clamp(26px,4vh,50px) auto 0;
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:stretch; }
+  .qbar__item{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
+    gap:9px; padding:6px clamp(20px,2.6vw,42px); max-width:190px; }
+  .qbar__item + .qbar__item::before{ content:""; position:absolute; left:0; top:8%; bottom:8%;
+    width:1px; background:rgba(255,255,255,.1); }
+  .qbar__ic{ display:flex; color:var(--gold); flex:none; }
+  .qbar__ic svg{ width:30px; height:30px; }
+  .qbar__label{ font-family:"Instrument Sans",system-ui,sans-serif; font-weight:600; font-size:1.02rem;
+    color:rgba(243,236,221,.9); line-height:1.15; }
+  .qbar__desc{ font-size:.8rem; line-height:1.4; color:var(--muted,#8FA09B); }
+  @media (max-width:640px){ .qbar__item + .qbar__item::before{ display:none; } }
+
   /* ================= NEW HERO ================= */
   .hero{ position:relative; min-height:100vh; min-height:100svh; overflow:hidden; display:flex; }
   .hero__media{ position:absolute; inset:0; z-index:0; }
@@ -2079,7 +2093,34 @@
       <p class="explore-head__sub">Ways to discover your next favorite movie.</p>
     </div>
     <div class="pcards" id="pcards"><!-- injected --></div>
+    <div class="qbar" id="qgrid"><!-- injected --></div>
   </section>
+  <script>
+    (function(){
+      const g=document.getElementById('qgrid'); if(!g) return;
+      const Q=[
+        {title:'Streaming', desc:'Find where any film streams',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M8.1 15.9a5.5 5.5 0 0 1 0-7.8M15.9 8.1a5.5 5.5 0 0 1 0 7.8M5.3 18.7a9.5 9.5 0 0 1 0-13.4M18.7 5.3a9.5 9.5 0 0 1 0 13.4"/></svg>'},
+        {title:'Browse by Mood', desc:'Movies for how you feel',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0"/><circle cx="9" cy="10" r="1.05" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1.05" fill="currentColor" stroke="none"/></svg>'},
+        {title:'Categories', desc:'Trending, genres and more',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>'},
+        {title:'Watchlist', desc:'Save titles to watch later',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1z"/><path d="M12 12.2l-1.7-1.6a1.55 1.55 0 1 1 1.7-2.5 1.55 1.55 0 1 1 1.7 2.5z" fill="currentColor" stroke="none"/></svg>'},
+        {title:'Kids &amp; Family', desc:'Safe picks for everyone',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17.2" cy="9" r="2.2"/><path d="M15.6 19a4.2 4.2 0 0 1 5.4-3.8"/></svg>'},
+        {title:'I&rsquo;m Feeling Lucky', desc:'One great pick, instantly',
+         icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="4.2" rx="1"/><path d="M5.2 12.7V20a1 1 0 0 0 1 1h11.6a1 1 0 0 0 1-1v-7.3"/><line x1="12" y1="8.5" x2="12" y2="21"/><path d="M12 8.5C10.5 5 7.5 5 8 7c.3 1.2 4 1.5 4 1.5z"/><path d="M12 8.5C13.5 5 16.5 5 16 7c-.3 1.2-4 1.5-4 1.5z"/></svg>'},
+      ];
+      g.innerHTML=Q.map(c=>(
+        '<div class="qbar__item">'
+        + '<span class="qbar__ic">'+c.icon+'</span>'
+        + '<span class="qbar__label">'+c.title+'</span>'
+        + '<span class="qbar__desc">'+c.desc+'</span>'
+        + '</div>'
+      )).join('');
+    })();
+  </script>
 
   <!-- ============ TRENDING / BROWSE (final page) ============ -->
   <section class="browse" id="browse" aria-label="What everyone's watching">
