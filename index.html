@@ -2846,8 +2846,8 @@
       function moreBtnHTML(){
         if(moreAllowed()){
           return gridMode
-            ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Load more</button></div>'
-            : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Load more</button></div>';
+            ? '<div class="mgrid__morewrap"><button class="mgrid__more" id="catMore" type="button">Show more</button></div>'
+            : '<div class="reelmore"><button class="reelmore__btn" id="reelMore" type="button">Show more</button></div>';
         }
         // reached the end of this batch -> offer See all (reel only) + Reroll (if more movies exist)
         const reroll = catHasNextBatch
@@ -3008,7 +3008,7 @@
           catHasNextBatch = !!data.has_next_batch;
         }catch(e){ /* keep the button so the user can retry */ }
         const wrap=grid.querySelector(gridMode ? '.mgrid__morewrap' : '.reelmore');
-        if(moreAllowed()){ btn.disabled=false; btn.textContent='Load more'; }
+        if(moreAllowed()){ btn.disabled=false; btn.textContent='Show more'; }
         else if(wrap){ wrap.insertAdjacentHTML('afterend', moreBtnHTML()); wrap.remove(); }
       }
       // Reroll: jump to the next batch (deeper TMDB pages) for genuinely new movies,
