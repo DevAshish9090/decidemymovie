@@ -2806,7 +2806,7 @@
         const t=esc(m.title), title=t+(m.year?' ('+m.year+')':'');
         const rating = m.rating ? '<span class="mcard__r">&#9733; '+Number(m.rating).toFixed(1)+'</span>' : '';
         return '<a class="mcard" href="#" data-id="'+(m.tmdb_id||'')+'" title="'+title+'">'
-          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" '
+          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" decoding="async" '
           +   'onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
           + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>';
       }
@@ -3176,7 +3176,7 @@
         const t=esc(m.title), title=t+(m.year?' ('+m.year+')':'');
         const rating=m.rating?'<span class="mcard__r">&#9733; '+Number(m.rating).toFixed(1)+'</span>':'';
         return '<a class="mcard" href="#" data-id="'+(m.tmdb_id||'')+'" title="'+title+'">'
-          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
+          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
           + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>';
       }
 
@@ -3845,7 +3845,7 @@
         const rating=m.rating?'<span class="mcard__r">&#9733; '+Number(m.rating).toFixed(1)+'</span>':'';
         const poster=m.poster_url
           ? '<a class="mcard" href="#" data-id="'+(m.tmdb_id||'')+'" title="'+full+'">'
-            + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
+            + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
             + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>'
           : '<div class="mcard mcard--ph"><div class="mcard__ph">'+filmIcon+'</div></div>';
         const why=m.why?'<p class="vcard__why"><b>'+t+(m.year?' ('+m.year+')':'')+'</b>'+esc(m.why)+'</p>'
@@ -4480,7 +4480,7 @@
         const rating=m.rating?'<span class="mcard__r">&#9733; '+Number(m.rating).toFixed(1)+'</span>':'';
         const poster=m.poster_url
           ? '<a class="mcard" href="#" data-id="'+(m.tmdb_id||'')+'" title="'+full+'">'
-            + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
+            + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
             + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>'
           : '<div class="mcard mcard--ph"><div class="mcard__ph">'+filmIcon+'</div></div>';
         return '<div class="vcard">'+poster+'<p class="vcard__why"><b>'+full+'</b>'+esc(m.why||'')+'</p></div>';
@@ -4828,7 +4828,7 @@
             + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>';
         }
         return '<a class="mcard" href="#" data-id="'+id+'" data-type="'+mt+'" title="'+t+'">'
-          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" '
+          + '<img class="mcard__img" src="'+m.poster_url+'" alt="'+t+'" loading="lazy" decoding="async" '
           +   'onerror="this.parentNode.classList.add(\'mcard--ph\');this.remove();">'
           + '<span class="mcard__meta"><span class="mcard__t">'+t+'</span>'+rating+'</span></a>';
       }
