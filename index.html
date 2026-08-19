@@ -4910,16 +4910,22 @@
   </script>
 
 <script>
-  /* Preload the mood emoji art so the "Match My Mood" picker appears instantly
-     (previously these lazy-loaded on open, causing a 1-2s delay). Runs when the
-     browser is idle so it never competes with the initial page load. */
+  /* Preload the big right-side artwork (mood + describe views) immediately and
+     with high priority so it's ready the instant the view opens; preload the
+     small mood-picker emojis on idle. */
   (function(){
-    var imgs=['img/mood-faces.webp',
-      'emoji/mood-crowdpleaser.png','emoji/mood-dark.png','emoji/mood-emotional.png',
+    // large side artwork — fetch right away, high priority
+    ['img/mood-faces.webp','img/describe-art.webp'].forEach(function(src){
+      var i=new Image();
+      try{ i.fetchPriority='high'; }catch(e){}
+      i.src=src;
+    });
+    // small emoji icons for the mood picker — fetch when the browser is idle
+    var emojis=['emoji/mood-crowdpleaser.png','emoji/mood-dark.png','emoji/mood-emotional.png',
       'emoji/mood-family.png','emoji/mood-laugh.png','emoji/mood-loweffort.png',
       'emoji/mood-mindbent.png','emoji/mood-pumped.png','emoji/mood-romantic.png',
       'emoji/mood-scared.png','emoji/mood-thoughtful.png','emoji/mood-unwind.png'];
-    function go(){ imgs.forEach(function(src){ var i=new Image(); i.src=src; }); }
+    function go(){ emojis.forEach(function(src){ var i=new Image(); i.src=src; }); }
     if('requestIdleCallback' in window){ requestIdleCallback(go,{timeout:2500}); }
     else { window.addEventListener('load', function(){ setTimeout(go,1200); }); }
   })();
